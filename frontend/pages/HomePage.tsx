@@ -45,30 +45,30 @@ export function HomePage() {
   return (
     <div className="space-y-8">
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-gray-900">
-          Sistema de Token Bancário
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+          Token Bancário
         </h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+        <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
           Plataforma completa para integração com as APIs dos Bancos Itaú e Inter. 
           Gerencie tokens, processe pagamentos PIX, emita boletos e muito mais.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {features.map((feature) => {
           const Icon = feature.icon;
           return (
             <Card key={feature.title} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
+              <CardHeader className="pb-4">
                 <div className="flex items-center space-x-3">
-                  <Icon className={`h-8 w-8 ${feature.color}`} />
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
+                  <Icon className={`h-6 w-6 md:h-8 md:w-8 ${feature.color}`} />
+                  <CardTitle className="text-lg md:text-xl">{feature.title}</CardTitle>
                 </div>
-                <CardDescription className="text-base">
+                <CardDescription className="text-sm md:text-base">
                   {feature.description}
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-0">
                 <Button asChild className="w-full">
                   <Link to={feature.href} className="flex items-center justify-center space-x-2">
                     <span>Acessar</span>
@@ -83,12 +83,12 @@ export function HomePage() {
 
       <Card className="bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200">
         <CardHeader>
-          <CardTitle className="text-2xl text-orange-800">
+          <CardTitle className="text-xl md:text-2xl text-orange-800">
             Sobre o Sistema
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-orange-700">
-          <p>
+          <p className="text-sm md:text-base">
             Este sistema foi desenvolvido para facilitar a integração com as APIs dos Bancos Itaú e Inter,
             seguindo todas as diretrizes de segurança e autenticação exigidas pelos bancos.
           </p>

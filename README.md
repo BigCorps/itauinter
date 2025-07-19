@@ -1,4 +1,4 @@
-# Sistema de Token Bancário
+# Token Bancário
 
 Sistema completo para integração com as APIs dos Bancos Itaú e Inter, desenvolvido com Encore.ts e React.
 

@@ -141,27 +141,27 @@ export function TokenPage() {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center justify-center space-x-2">
-          <Key className="h-8 w-8 text-blue-600" />
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center justify-center space-x-2">
+          <Key className="h-6 w-6 md:h-8 md:w-8 text-blue-600" />
           <span>Gerar Token Bancário</span>
         </h1>
-        <p className="text-gray-600">
+        <p className="text-sm md:text-base text-gray-600 px-4">
           Gere tokens de acesso para as APIs dos bancos usando diferentes métodos de autenticação
         </p>
       </div>
 
       <Tabs defaultValue="credentials" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="credentials">Client Credentials</TabsTrigger>
-          <TabsTrigger value="jwt">JWT + mTLS</TabsTrigger>
-          <TabsTrigger value="typebot">Para Typebot</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 text-xs md:text-sm">
+          <TabsTrigger value="credentials" className="px-2 md:px-4">Client Credentials</TabsTrigger>
+          <TabsTrigger value="jwt" className="px-2 md:px-4">JWT + mTLS</TabsTrigger>
+          <TabsTrigger value="typebot" className="px-2 md:px-4">Para Typebot</TabsTrigger>
         </TabsList>
 
         <TabsContent value="credentials">
           <Card>
             <CardHeader>
-              <CardTitle>Client Credentials Flow</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-lg md:text-xl">Client Credentials Flow</CardTitle>
+              <CardDescription className="text-sm md:text-base">
                 Método padrão de autenticação usando client_id e client_secret
               </CardDescription>
             </CardHeader>
@@ -201,6 +201,7 @@ export function TokenPage() {
                       value={credentials.clientSecret}
                       onChange={(e) => setCredentials({ ...credentials, clientSecret: e.target.value })}
                       placeholder="Seu Client Secret"
+                      className="pr-10"
                     />
                     <Button
                       type="button"
@@ -231,11 +232,11 @@ export function TokenPage() {
                 accept=".key,.pem"
               />
 
-              <div className="flex space-x-2">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                 <Button onClick={handleGenerateToken} disabled={loading} className="flex-1">
                   {loading ? "Gerando..." : "Gerar Token"}
                 </Button>
-                <Button onClick={handleRefreshToken} disabled={loading} variant="outline">
+                <Button onClick={handleRefreshToken} disabled={loading} variant="outline" className="sm:w-auto">
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Renovar
                 </Button>
@@ -247,8 +248,8 @@ export function TokenPage() {
         <TabsContent value="jwt">
           <Card>
             <CardHeader>
-              <CardTitle>JWT + mTLS Flow</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-lg md:text-xl">JWT + mTLS Flow</CardTitle>
+              <CardDescription className="text-sm md:text-base">
                 Método avançado usando JWT para maior segurança
               </CardDescription>
             </CardHeader>
@@ -287,7 +288,7 @@ export function TokenPage() {
                   onChange={(e) => setJwtCredentials({ ...jwtCredentials, privateKeyJwt: e.target.value })}
                   placeholder="Cole seu JWT assinado aqui..."
                   rows={4}
-                  className="w-full p-3 border border-gray-300 rounded-md font-mono text-sm"
+                  className="w-full p-3 border border-gray-300 rounded-md font-mono text-sm resize-none"
                 />
               </div>
 
@@ -317,20 +318,20 @@ export function TokenPage() {
         <TabsContent value="typebot">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-2 text-lg md:text-xl">
                 <ExternalLink className="h-5 w-5" />
                 <span>Configuração para Typebot</span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm md:text-base">
                 URLs, headers e bodies para usar no Typebot
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold">1. Gerar Token</h3>
-                <div className="bg-gray-50 p-4 rounded-md space-y-2">
+                <h3 className="text-base md:text-lg font-semibold">1. Gerar Token</h3>
+                <div className="bg-gray-50 p-3 md:p-4 rounded-md space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label className="font-medium">URL:</Label>
+                    <Label className="font-medium text-sm">URL:</Label>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -339,17 +340,17 @@ export function TokenPage() {
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
-                  <code className="block bg-white p-2 rounded border text-sm">
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
                     https://token.bigcorps.com.br/auth/token
                   </code>
                   
                   <div className="flex items-center justify-between">
-                    <Label className="font-medium">Método:</Label>
+                    <Label className="font-medium text-sm">Método:</Label>
                   </div>
-                  <code className="block bg-white p-2 rounded border text-sm">POST</code>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm">POST</code>
                   
                   <div className="flex items-center justify-between">
-                    <Label className="font-medium">Headers:</Label>
+                    <Label className="font-medium text-sm">Headers:</Label>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -358,12 +359,12 @@ export function TokenPage() {
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
-                  <code className="block bg-white p-2 rounded border text-sm">
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm overflow-x-auto">
                     {JSON.stringify({"Content-Type": "application/json"}, null, 2)}
                   </code>
                   
                   <div className="flex items-center justify-between">
-                    <Label className="font-medium">Body:</Label>
+                    <Label className="font-medium text-sm">Body:</Label>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -378,7 +379,7 @@ export function TokenPage() {
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
-                  <code className="block bg-white p-2 rounded border text-sm whitespace-pre">
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm whitespace-pre overflow-x-auto">
                     {JSON.stringify({
                       "banco": "{{banco}}",
                       "clientId": "{{clientId}}",
@@ -391,10 +392,10 @@ export function TokenPage() {
               </div>
 
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold">2. Criar Pagamento PIX</h3>
-                <div className="bg-gray-50 p-4 rounded-md space-y-2">
+                <h3 className="text-base md:text-lg font-semibold">2. Criar Pagamento PIX</h3>
+                <div className="bg-gray-50 p-3 md:p-4 rounded-md space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label className="font-medium">URL:</Label>
+                    <Label className="font-medium text-sm">URL:</Label>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -403,17 +404,17 @@ export function TokenPage() {
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
-                  <code className="block bg-white p-2 rounded border text-sm">
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
                     https://token.bigcorps.com.br/pix/pagamento
                   </code>
                   
                   <div className="flex items-center justify-between">
-                    <Label className="font-medium">Método:</Label>
+                    <Label className="font-medium text-sm">Método:</Label>
                   </div>
-                  <code className="block bg-white p-2 rounded border text-sm">POST</code>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm">POST</code>
                   
                   <div className="flex items-center justify-between">
-                    <Label className="font-medium">Headers:</Label>
+                    <Label className="font-medium text-sm">Headers:</Label>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -422,12 +423,12 @@ export function TokenPage() {
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
-                  <code className="block bg-white p-2 rounded border text-sm">
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm overflow-x-auto">
                     {JSON.stringify({"Content-Type": "application/json"}, null, 2)}
                   </code>
                   
                   <div className="flex items-center justify-between">
-                    <Label className="font-medium">Body:</Label>
+                    <Label className="font-medium text-sm">Body:</Label>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -445,7 +446,7 @@ export function TokenPage() {
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
-                  <code className="block bg-white p-2 rounded border text-sm whitespace-pre">
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm whitespace-pre overflow-x-auto">
                     {JSON.stringify({
                       "banco": "{{banco}}",
                       "clientId": "{{clientId}}",
@@ -461,10 +462,10 @@ export function TokenPage() {
               </div>
 
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold">3. Gerar QR Code PIX</h3>
-                <div className="bg-gray-50 p-4 rounded-md space-y-2">
+                <h3 className="text-base md:text-lg font-semibold">3. Gerar QR Code PIX</h3>
+                <div className="bg-gray-50 p-3 md:p-4 rounded-md space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label className="font-medium">URL:</Label>
+                    <Label className="font-medium text-sm">URL:</Label>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -473,12 +474,12 @@ export function TokenPage() {
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
-                  <code className="block bg-white p-2 rounded border text-sm">
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
                     https://token.bigcorps.com.br/pix/recebimento
                   </code>
                   
                   <div className="flex items-center justify-between">
-                    <Label className="font-medium">Body:</Label>
+                    <Label className="font-medium text-sm">Body:</Label>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -495,7 +496,7 @@ export function TokenPage() {
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
-                  <code className="block bg-white p-2 rounded border text-sm whitespace-pre">
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm whitespace-pre overflow-x-auto">
                     {JSON.stringify({
                       "banco": "{{banco}}",
                       "clientId": "{{clientId}}",
@@ -510,10 +511,10 @@ export function TokenPage() {
               </div>
 
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold">4. Criar Boleto</h3>
-                <div className="bg-gray-50 p-4 rounded-md space-y-2">
+                <h3 className="text-base md:text-lg font-semibold">4. Criar Boleto</h3>
+                <div className="bg-gray-50 p-3 md:p-4 rounded-md space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label className="font-medium">URL:</Label>
+                    <Label className="font-medium text-sm">URL:</Label>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -522,12 +523,12 @@ export function TokenPage() {
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
-                  <code className="block bg-white p-2 rounded border text-sm">
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
                     https://token.bigcorps.com.br/boleto/criar
                   </code>
                   
                   <div className="flex items-center justify-between">
-                    <Label className="font-medium">Body:</Label>
+                    <Label className="font-medium text-sm">Body:</Label>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -552,7 +553,7 @@ export function TokenPage() {
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
-                  <code className="block bg-white p-2 rounded border text-sm whitespace-pre">
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm whitespace-pre overflow-x-auto">
                     {JSON.stringify({
                       "banco": "{{banco}}",
                       "clientId": "{{clientId}}",
@@ -575,10 +576,10 @@ export function TokenPage() {
               </div>
 
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold">5. Consultar Saldo</h3>
-                <div className="bg-gray-50 p-4 rounded-md space-y-2">
+                <h3 className="text-base md:text-lg font-semibold">5. Consultar Saldo</h3>
+                <div className="bg-gray-50 p-3 md:p-4 rounded-md space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label className="font-medium">URL:</Label>
+                    <Label className="font-medium text-sm">URL:</Label>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -587,17 +588,17 @@ export function TokenPage() {
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
-                  <code className="block bg-white p-2 rounded border text-sm">
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
                     https://token.bigcorps.com.br/account/saldo
                   </code>
                   
                   <div className="flex items-center justify-between">
-                    <Label className="font-medium">Método:</Label>
+                    <Label className="font-medium text-sm">Método:</Label>
                   </div>
-                  <code className="block bg-white p-2 rounded border text-sm">GET</code>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm">GET</code>
                   
                   <div className="flex items-center justify-between">
-                    <Label className="font-medium">Body:</Label>
+                    <Label className="font-medium text-sm">Body:</Label>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -612,7 +613,7 @@ export function TokenPage() {
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
-                  <code className="block bg-white p-2 rounded border text-sm whitespace-pre">
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm whitespace-pre overflow-x-auto">
                     {JSON.stringify({
                       "banco": "{{banco}}",
                       "clientId": "{{clientId}}",
@@ -624,9 +625,9 @@ export function TokenPage() {
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-                <h4 className="font-semibold text-blue-800 mb-2">Observações para Typebot:</h4>
-                <ul className="text-sm text-blue-700 space-y-1">
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 md:p-4">
+                <h4 className="font-semibold text-blue-800 mb-2 text-sm md:text-base">Observações para Typebot:</h4>
+                <ul className="text-xs md:text-sm text-blue-700 space-y-1">
                   <li>• Substitua as variáveis {"{{variavel}}"} pelos valores reais ou variáveis do Typebot</li>
                   <li>• Para banco use: ITAU ou INTER</li>
                   <li>• O certificado e chave privada devem estar em formato Base64</li>
@@ -643,7 +644,7 @@ export function TokenPage() {
       {tokenData && (
         <Card className="bg-green-50 border-green-200">
           <CardHeader>
-            <CardTitle className="text-green-800">Token Gerado com Sucesso</CardTitle>
+            <CardTitle className="text-green-800 text-lg md:text-xl">Token Gerado com Sucesso</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -659,25 +660,25 @@ export function TokenPage() {
                   </Button>
                 </div>
                 <div className="p-3 bg-white border border-green-200 rounded-md">
-                  <code className="text-sm break-all">{tokenData.accessToken}</code>
+                  <code className="text-xs md:text-sm break-all">{tokenData.accessToken}</code>
                 </div>
               </div>
               <div>
                 <Label className="text-sm font-medium text-green-700">Tipo</Label>
                 <div className="mt-1 p-3 bg-white border border-green-200 rounded-md">
-                  <code className="text-sm">{tokenData.tokenType}</code>
+                  <code className="text-xs md:text-sm">{tokenData.tokenType}</code>
                 </div>
               </div>
               <div>
                 <Label className="text-sm font-medium text-green-700">Expira em</Label>
                 <div className="mt-1 p-3 bg-white border border-green-200 rounded-md">
-                  <code className="text-sm">{tokenData.expiresIn} segundos</code>
+                  <code className="text-xs md:text-sm">{tokenData.expiresIn} segundos</code>
                 </div>
               </div>
               <div>
                 <Label className="text-sm font-medium text-green-700">Gerado em</Label>
                 <div className="mt-1 p-3 bg-white border border-green-200 rounded-md">
-                  <code className="text-sm">{new Date(tokenData.generatedAt).toLocaleString()}</code>
+                  <code className="text-xs md:text-sm">{new Date(tokenData.generatedAt).toLocaleString()}</code>
                 </div>
               </div>
             </div>
