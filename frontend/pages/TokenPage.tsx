@@ -3,10 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { Key, RefreshCw, Eye, EyeOff } from "lucide-react";
+import { Key, RefreshCw, Eye, EyeOff, Copy, ExternalLink } from "lucide-react";
+import { FileUpload } from "../components/FileUpload";
 import backend from "~backend/client";
 
 export function TokenPage() {
@@ -119,6 +119,14 @@ export function TokenPage() {
     }
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Copiado!",
+      description: "Texto copiado para a área de transferência",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
@@ -132,9 +140,10 @@ export function TokenPage() {
       </div>
 
       <Tabs defaultValue="credentials" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="credentials">Client Credentials</TabsTrigger>
           <TabsTrigger value="jwt">JWT + mTLS</TabsTrigger>
+          <TabsTrigger value="typebot">Para Typebot</TabsTrigger>
         </TabsList>
 
         <TabsContent value="credentials">
@@ -179,27 +188,21 @@ export function TokenPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="certificate">Certificado (.crt)</Label>
-                <Textarea
-                  id="certificate"
-                  value={credentials.certificateContent}
-                  onChange={(e) => setCredentials({ ...credentials, certificateContent: e.target.value })}
-                  placeholder="Cole o conteúdo do seu certificado aqui..."
-                  rows={6}
-                />
-              </div>
+              <FileUpload
+                label="Certificado (.crt)"
+                value={credentials.certificateContent}
+                onChange={(value) => setCredentials({ ...credentials, certificateContent: value })}
+                placeholder="Cole o conteúdo do seu certificado aqui ou carregue o arquivo..."
+                accept=".crt,.pem"
+              />
 
-              <div className="space-y-2">
-                <Label htmlFor="privateKey">Chave Privada (.key)</Label>
-                <Textarea
-                  id="privateKey"
-                  value={credentials.privateKeyContent}
-                  onChange={(e) => setCredentials({ ...credentials, privateKeyContent: e.target.value })}
-                  placeholder="Cole o conteúdo da sua chave privada aqui..."
-                  rows={6}
-                />
-              </div>
+              <FileUpload
+                label="Chave Privada (.key)"
+                value={credentials.privateKeyContent}
+                onChange={(value) => setCredentials({ ...credentials, privateKeyContent: value })}
+                placeholder="Cole o conteúdo da sua chave privada aqui ou carregue o arquivo..."
+                accept=".key,.pem"
+              />
 
               <div className="flex space-x-2">
                 <Button onClick={handleGenerateToken} disabled={loading} className="flex-1">
@@ -235,40 +238,354 @@ export function TokenPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="privateKeyJwt">Private Key JWT</Label>
-                <Textarea
+                <textarea
                   id="privateKeyJwt"
                   value={jwtCredentials.privateKeyJwt}
                   onChange={(e) => setJwtCredentials({ ...jwtCredentials, privateKeyJwt: e.target.value })}
                   placeholder="Cole seu JWT assinado aqui..."
                   rows={4}
+                  className="w-full p-3 border border-gray-300 rounded-md font-mono text-sm"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="jwtCertificate">Certificado (.crt)</Label>
-                <Textarea
-                  id="jwtCertificate"
-                  value={jwtCredentials.certificateContent}
-                  onChange={(e) => setJwtCredentials({ ...jwtCredentials, certificateContent: e.target.value })}
-                  placeholder="Cole o conteúdo do seu certificado aqui..."
-                  rows={6}
-                />
-              </div>
+              <FileUpload
+                label="Certificado (.crt)"
+                value={jwtCredentials.certificateContent}
+                onChange={(value) => setJwtCredentials({ ...jwtCredentials, certificateContent: value })}
+                placeholder="Cole o conteúdo do seu certificado aqui ou carregue o arquivo..."
+                accept=".crt,.pem"
+              />
 
-              <div className="space-y-2">
-                <Label htmlFor="jwtPrivateKey">Chave Privada (.key)</Label>
-                <Textarea
-                  id="jwtPrivateKey"
-                  value={jwtCredentials.privateKeyContent}
-                  onChange={(e) => setJwtCredentials({ ...jwtCredentials, privateKeyContent: e.target.value })}
-                  placeholder="Cole o conteúdo da sua chave privada aqui..."
-                  rows={6}
-                />
-              </div>
+              <FileUpload
+                label="Chave Privada (.key)"
+                value={jwtCredentials.privateKeyContent}
+                onChange={(value) => setJwtCredentials({ ...jwtCredentials, privateKeyContent: value })}
+                placeholder="Cole o conteúdo da sua chave privada aqui ou carregue o arquivo..."
+                accept=".key,.pem"
+              />
 
               <Button onClick={handleGenerateJWTToken} disabled={loading} className="w-full">
                 {loading ? "Gerando..." : "Gerar Token JWT"}
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="typebot">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <ExternalLink className="h-5 w-5" />
+                <span>Configuração para Typebot</span>
+              </CardTitle>
+              <CardDescription>
+                URLs, headers e bodies para usar no Typebot
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Gerar Token */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold">1. Gerar Token</h3>
+                <div className="bg-gray-50 p-4 rounded-md space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium">URL:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/auth/token")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-sm">
+                    https://token.bigcorps.com.br/auth/token
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium">Método:</Label>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-sm">POST</code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium">Headers:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard('{"Content-Type": "application/json"}')}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-sm">
+                    {JSON.stringify({"Content-Type": "application/json"}, null, 2)}
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium">Body:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(JSON.stringify({
+                        "clientId": "{{clientId}}",
+                        "clientSecret": "{{clientSecret}}",
+                        "certificateContent": "{{certificateBase64}}",
+                        "privateKeyContent": "{{privateKeyBase64}}"
+                      }, null, 2))}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-sm whitespace-pre">
+                    {JSON.stringify({
+                      "clientId": "{{clientId}}",
+                      "clientSecret": "{{clientSecret}}",
+                      "certificateContent": "{{certificateBase64}}",
+                      "privateKeyContent": "{{privateKeyBase64}}"
+                    }, null, 2)}
+                  </code>
+                </div>
+              </div>
+
+              {/* Criar PIX */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold">2. Criar Pagamento PIX</h3>
+                <div className="bg-gray-50 p-4 rounded-md space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium">URL:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/pix/pagamento")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-sm">
+                    https://token.bigcorps.com.br/pix/pagamento
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium">Método:</Label>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-sm">POST</code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium">Headers:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard('{"Content-Type": "application/json"}')}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-sm">
+                    {JSON.stringify({"Content-Type": "application/json"}, null, 2)}
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium">Body:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(JSON.stringify({
+                        "clientId": "{{clientId}}",
+                        "accessToken": "{{accessToken}}",
+                        "valor": "{{valor}}",
+                        "chaveDestinatario": "{{chaveDestinatario}}",
+                        "tipoChave": "{{tipoChave}}",
+                        "descricao": "{{descricao}}",
+                        "nomeDestinatario": "{{nomeDestinatario}}"
+                      }, null, 2))}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-sm whitespace-pre">
+                    {JSON.stringify({
+                      "clientId": "{{clientId}}",
+                      "accessToken": "{{accessToken}}",
+                      "valor": "{{valor}}",
+                      "chaveDestinatario": "{{chaveDestinatario}}",
+                      "tipoChave": "{{tipoChave}}",
+                      "descricao": "{{descricao}}",
+                      "nomeDestinatario": "{{nomeDestinatario}}"
+                    }, null, 2)}
+                  </code>
+                </div>
+              </div>
+
+              {/* Gerar QR Code PIX */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold">3. Gerar QR Code PIX</h3>
+                <div className="bg-gray-50 p-4 rounded-md space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium">URL:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/pix/recebimento")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-sm">
+                    https://token.bigcorps.com.br/pix/recebimento
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium">Body:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(JSON.stringify({
+                        "clientId": "{{clientId}}",
+                        "accessToken": "{{accessToken}}",
+                        "valor": "{{valor}}",
+                        "chaveRecebimento": "{{chaveRecebimento}}",
+                        "tipoChave": "{{tipoChave}}",
+                        "descricao": "{{descricao}}"
+                      }, null, 2))}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-sm whitespace-pre">
+                    {JSON.stringify({
+                      "clientId": "{{clientId}}",
+                      "accessToken": "{{accessToken}}",
+                      "valor": "{{valor}}",
+                      "chaveRecebimento": "{{chaveRecebimento}}",
+                      "tipoChave": "{{tipoChave}}",
+                      "descricao": "{{descricao}}"
+                    }, null, 2)}
+                  </code>
+                </div>
+              </div>
+
+              {/* Criar Boleto */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold">4. Criar Boleto</h3>
+                <div className="bg-gray-50 p-4 rounded-md space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium">URL:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/boleto/criar")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-sm">
+                    https://token.bigcorps.com.br/boleto/criar
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium">Body:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(JSON.stringify({
+                        "clientId": "{{clientId}}",
+                        "accessToken": "{{accessToken}}",
+                        "valor": "{{valor}}",
+                        "vencimento": "{{vencimento}}",
+                        "nomePagador": "{{nomePagador}}",
+                        "cpfCnpjPagador": "{{cpfCnpjPagador}}",
+                        "enderecoPagador": {
+                          "logradouro": "{{logradouro}}",
+                          "numero": "{{numero}}",
+                          "bairro": "{{bairro}}",
+                          "cidade": "{{cidade}}",
+                          "uf": "{{uf}}",
+                          "cep": "{{cep}}"
+                        }
+                      }, null, 2))}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-sm whitespace-pre">
+                    {JSON.stringify({
+                      "clientId": "{{clientId}}",
+                      "accessToken": "{{accessToken}}",
+                      "valor": "{{valor}}",
+                      "vencimento": "{{vencimento}}",
+                      "nomePagador": "{{nomePagador}}",
+                      "cpfCnpjPagador": "{{cpfCnpjPagador}}",
+                      "enderecoPagador": {
+                        "logradouro": "{{logradouro}}",
+                        "numero": "{{numero}}",
+                        "bairro": "{{bairro}}",
+                        "cidade": "{{cidade}}",
+                        "uf": "{{uf}}",
+                        "cep": "{{cep}}"
+                      }
+                    }, null, 2)}
+                  </code>
+                </div>
+              </div>
+
+              {/* Consultar Saldo */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold">5. Consultar Saldo</h3>
+                <div className="bg-gray-50 p-4 rounded-md space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium">URL:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/account/saldo")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-sm">
+                    https://token.bigcorps.com.br/account/saldo
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium">Método:</Label>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-sm">GET</code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium">Body:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(JSON.stringify({
+                        "clientId": "{{clientId}}",
+                        "accessToken": "{{accessToken}}",
+                        "agencia": "{{agencia}}",
+                        "conta": "{{conta}}"
+                      }, null, 2))}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-sm whitespace-pre">
+                    {JSON.stringify({
+                      "clientId": "{{clientId}}",
+                      "accessToken": "{{accessToken}}",
+                      "agencia": "{{agencia}}",
+                      "conta": "{{conta}}"
+                    }, null, 2)}
+                  </code>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                <h4 className="font-semibold text-blue-800 mb-2">Observações para Typebot:</h4>
+                <ul className="text-sm text-blue-700 space-y-1">
+                  <li>• Substitua as variáveis {{variavel}} pelos valores reais ou variáveis do Typebot</li>
+                  <li>• O certificado e chave privada devem estar em formato Base64</li>
+                  <li>• Todos os endpoints retornam JSON</li>
+                  <li>• O token expira em 5 minutos (300 segundos)</li>
+                  <li>• Para tipos de chave PIX use: CPF, CNPJ, EMAIL, TELEFONE, CHAVE_ALEATORIA</li>
+                </ul>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -282,8 +599,17 @@ export function TokenPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-sm font-medium text-green-700">Access Token</Label>
-                <div className="mt-1 p-3 bg-white border border-green-200 rounded-md">
+                <div className="flex items-center justify-between mb-1">
+                  <Label className="text-sm font-medium text-green-700">Access Token</Label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => copyToClipboard(tokenData.accessToken)}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="p-3 bg-white border border-green-200 rounded-md">
                   <code className="text-sm break-all">{tokenData.accessToken}</code>
                 </div>
               </div>
