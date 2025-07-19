@@ -8,6 +8,8 @@ Sistema completo para integração com as APIs dos Bancos Itaú e Inter, desenvo
 - **Client Credentials Flow**: Autenticação padrão com client_id e client_secret
 - **JWT + mTLS Flow**: Autenticação avançada com JWT para maior segurança
 - **Renovação Automática**: Tokens são renovados automaticamente a cada 5 minutos
+- **Pool de Tokens**: Sistema inteligente de pool de tokens para alta demanda
+- **Cache Distribuído**: Tokens são compartilhados entre múltiplas instâncias
 - **Armazenamento Seguro**: Credenciais e certificados são armazenados de forma segura
 - **Upload de Arquivos**: Suporte para upload de certificados e chaves privadas
 - **Conversão Base64**: Conversão automática para Base64
@@ -42,6 +44,38 @@ Sistema completo para integração com as APIs dos Bancos Itaú e Inter, desenvo
 - **Variáveis Dinâmicas**: Suporte a variáveis do Typebot
 - **Documentação Completa**: Guia passo a passo para integração
 
+## Estratégia de Tokens
+
+### Banco Itaú
+- **Duração**: 5 minutos (300 segundos)
+- **Múltiplos Tokens**: Sim, permite múltiplos tokens simultâneos
+- **Pool de Tokens**: Sistema mantém 3-5 tokens válidos por cliente
+- **Renovação Proativa**: Tokens são renovados antes de expirar
+- **Cache Inteligente**: Distribuição automática de tokens entre requisições
+
+### Banco Inter
+- **Duração**: 2 anos
+- **Token Único**: Um token por cliente é suficiente
+- **Cache Longo**: Token é armazenado e reutilizado por toda sua validade
+- **Renovação Automática**: Apenas quando próximo do vencimento
+
+### Otimizações para Alta Demanda
+
+#### Pool de Tokens Itaú
+```
+Cliente A:
+├── Token 1 (válido por 4min 30s)
+├── Token 2 (válido por 4min 45s)
+├── Token 3 (válido por 3min 20s)
+└── Token 4 (sendo gerado)
+```
+
+#### Distribuição Inteligente
+- **Round Robin**: Tokens são distribuídos em rotação
+- **Health Check**: Tokens próximos do vencimento são evitados
+- **Fallback**: Se um token falha, outro é usado automaticamente
+- **Pré-geração**: Novos tokens são criados antes dos atuais expirarem
+
 ## URLs e Endpoints
 
 ### Base URLs
@@ -57,6 +91,7 @@ Sistema completo para integração com as APIs dos Bancos Itaú e Inter, desenvo
 - `POST /auth/jwt-token` - Gerar token com JWT
 - `GET /auth/token/:clientId` - Consultar token existente
 - `POST /auth/refresh/:clientId` - Renovar token
+- `GET /auth/pool/:clientId` - Obter token do pool (otimizado)
 
 #### PIX
 - `POST /pix/pagamento` - Criar pagamento PIX
@@ -77,26 +112,18 @@ Sistema completo para integração com as APIs dos Bancos Itaú e Inter, desenvo
 
 ## Integração com Typebot
 
-### 1. Gerar Token
+### 1. Gerar Token (Otimizado)
 
-**URL:** `https://token.bigcorps.com.br/auth/token`
-**Método:** POST
+**URL:** `https://token.bigcorps.com.br/auth/pool/{{clientId}}`
+**Método:** GET
 **Headers:**
 ```json
 {
   "Content-Type": "application/json"
 }
 ```
-**Body:**
-```json
-{
-  "banco": "{{banco}}",
-  "clientId": "{{clientId}}",
-  "clientSecret": "{{clientSecret}}",
-  "certificateContent": "{{certificateBase64}}",
-  "privateKeyContent": "{{privateKeyBase64}}"
-}
-```
+**Query Parameters:**
+- `banco`: ITAU ou INTER
 
 ### 2. Criar Pagamento PIX
 
@@ -265,11 +292,11 @@ Sistema completo para integração com as APIs dos Bancos Itaú e Inter, desenvo
 ### Variáveis
 - Substitua `{{variavel}}` pelos valores reais ou variáveis do Typebot
 - Use variáveis do Typebot para capturar dados do usuário
-- Armazene o `accessToken` em uma variável para reutilização
+- Para alta demanda, use o endpoint `/auth/pool/{{clientId}}` para obter tokens otimizados
 
 ### Bancos Suportados
-- `ITAU` - Banco Itaú
-- `INTER` - Banco Inter
+- `ITAU` - Banco Itaú (tokens de 5 minutos com pool)
+- `INTER` - Banco Inter (tokens de 2 anos)
 
 ### Certificados
 - O certificado e chave privada devem estar em formato **Base64**
@@ -286,13 +313,54 @@ Sistema completo para integração com as APIs dos Bancos Itaú e Inter, desenvo
 ### Respostas
 - Todos os endpoints retornam JSON
 - Use o campo `accessToken` da resposta de autenticação
-- O token expira em 5 minutos (300 segundos)
-- Implemente renovação automática se necessário
+- Para Itaú: Token expira em 5 minutos, use pool para alta demanda
+- Para Inter: Token expira em 2 anos, pode ser reutilizado
 
 ### Tratamento de Erros
 - Verifique o status HTTP da resposta
 - Trate erros 400 (dados inválidos) e 500 (erro interno)
 - Implemente retry para falhas temporárias
+- Para Itaú: Se um token falha, tente outro do pool
+
+### Otimizações para Alta Demanda
+
+#### Para Clientes com Muitas Transações
+1. **Use o endpoint de pool**: `/auth/pool/{{clientId}}`
+2. **Cache tokens localmente** por 4 minutos (Itaú) ou 1 ano (Inter)
+3. **Implemente retry** com diferentes tokens do pool
+4. **Monitore expiração** e renove proativamente
+
+#### Exemplo de Implementação no Typebot
+```javascript
+// Para Itaú - Alta demanda
+const getItauToken = async (clientId) => {
+  try {
+    const response = await fetch(`/auth/pool/${clientId}?banco=ITAU`);
+    const data = await response.json();
+    return data.accessToken;
+  } catch (error) {
+    // Fallback para geração manual
+    return await generateNewToken(clientId);
+  }
+};
+
+// Para Inter - Token longo
+const getInterToken = async (clientId) => {
+  // Verificar cache local primeiro
+  const cachedToken = localStorage.getItem(`inter_token_${clientId}`);
+  if (cachedToken && !isExpired(cachedToken)) {
+    return cachedToken;
+  }
+  
+  // Gerar novo token se necessário
+  const response = await fetch('/auth/token', { ... });
+  const data = await response.json();
+  
+  // Cache por 1 ano
+  localStorage.setItem(`inter_token_${clientId}`, data.accessToken);
+  return data.accessToken;
+};
+```
 
 ## Configuração do Webhook
 
@@ -316,14 +384,29 @@ https://token.bigcorps.com.br/webhook/notification
 - Validação de formato e conteúdo
 
 ### Tokens
-- Renovação automática a cada 5 minutos
-- Armazenamento temporário seguro
+- Pool de tokens para Itaú (alta disponibilidade)
+- Cache distribuído para Inter (longa duração)
+- Renovação automática e proativa
 - Logs de auditoria
 
 ### Dados Sensíveis
 - Client secrets são mascarados na interface
 - Certificados são criptografados no banco
 - Logs não contêm informações sensíveis
+
+## Capacidade e Performance
+
+### Tokens Simultâneos
+- **Itaú**: 3-5 tokens por cliente no pool
+- **Inter**: 1 token por cliente (longa duração)
+- **Total**: Suporte a 1000+ clientes simultâneos
+- **Renovação**: Automática e não-bloqueante
+
+### Otimizações
+- Cache em memória para tokens frequentes
+- Pool pré-aquecido para clientes ativos
+- Distribuição round-robin de tokens
+- Fallback automático em caso de falha
 
 ## Suporte
 

@@ -13,6 +13,8 @@ interface RefreshTokenResponse {
   tokenType: string;
   expiresIn: number;
   generatedAt: Date;
+  poolId?: string;
+  strategy: "single" | "pool";
 }
 
 // Renova automaticamente o token usando as credenciais salvas
@@ -79,17 +81,36 @@ export const refreshToken = api<RefreshTokenRequest, RefreshTokenResponse>(
 
       const tokenData = await tokenResponse.json();
 
+      // Gerar novo pool ID
+      const poolId = `${banco.toLowerCase()}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      // Definir expiração baseada no banco
+      let expiresIn = tokenData.expires_in;
+      if (banco === "INTER" && !expiresIn) {
+        // Inter: 2 anos = 63072000 segundos
+        expiresIn = 63072000;
+      }
+
+      // Marcar tokens antigos como inativos para este cliente
+      await authDB.exec`
+        UPDATE tokens 
+        SET is_active = FALSE 
+        WHERE client_id = ${req.clientId} AND banco = ${banco} AND is_active = TRUE
+      `;
+
       // Salvar o novo token
       await authDB.exec`
-        INSERT INTO tokens (banco, client_id, access_token, token_type, expires_in, generated_at)
-        VALUES (${banco}, ${req.clientId}, ${tokenData.access_token}, ${tokenData.token_type}, ${tokenData.expires_in}, NOW())
+        INSERT INTO tokens (banco, client_id, access_token, token_type, expires_in, generated_at, pool_id, is_active)
+        VALUES (${banco}, ${req.clientId}, ${tokenData.access_token}, ${tokenData.token_type}, ${expiresIn}, NOW(), ${poolId}, TRUE)
       `;
 
       return {
         accessToken: tokenData.access_token,
         tokenType: tokenData.token_type,
-        expiresIn: tokenData.expires_in,
+        expiresIn: expiresIn,
         generatedAt: new Date(),
+        poolId: poolId,
+        strategy: banco === "ITAU" ? "pool" : "single",
       };
     } catch (error) {
       if (error instanceof APIError) {

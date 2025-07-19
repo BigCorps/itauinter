@@ -19,6 +19,8 @@ interface TokenResponse {
   tokenType: string;
   expiresIn: number;
   generatedAt: Date;
+  poolId?: string;
+  strategy: "single" | "pool";
 }
 
 // Gera um access token usando client credentials flow
@@ -83,17 +85,39 @@ export const generateToken = api<GenerateTokenRequest, TokenResponse>(
 
       const tokenData = await tokenResponse.json();
 
+      // Gerar pool ID para controle
+      const poolId = `${req.banco.toLowerCase()}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      // Definir expiração baseada no banco
+      let expiresIn = tokenData.expires_in;
+      if (req.banco === "INTER" && !expiresIn) {
+        // Inter: 2 anos = 63072000 segundos
+        expiresIn = 63072000;
+      }
+
       // Salvar o token gerado
       await authDB.exec`
-        INSERT INTO tokens (banco, client_id, access_token, token_type, expires_in, generated_at)
-        VALUES (${req.banco}, ${req.clientId}, ${tokenData.access_token}, ${tokenData.token_type}, ${tokenData.expires_in}, NOW())
+        INSERT INTO tokens (banco, client_id, access_token, token_type, expires_in, generated_at, pool_id, is_active)
+        VALUES (${req.banco}, ${req.clientId}, ${tokenData.access_token}, ${tokenData.token_type}, ${expiresIn}, NOW(), ${poolId}, TRUE)
       `;
+
+      // Criar ou atualizar pool para Itaú
+      if (req.banco === "ITAU") {
+        await authDB.exec`
+          INSERT INTO token_pools (banco, client_id, pool_size, max_pool_size)
+          VALUES (${req.banco}, ${req.clientId}, 3, 5)
+          ON CONFLICT (banco, client_id) 
+          DO UPDATE SET updated_at = NOW()
+        `;
+      }
 
       return {
         accessToken: tokenData.access_token,
         tokenType: tokenData.token_type,
-        expiresIn: tokenData.expires_in,
+        expiresIn: expiresIn,
         generatedAt: new Date(),
+        poolId: poolId,
+        strategy: req.banco === "ITAU" ? "pool" : "single",
       };
     } catch (error) {
       if (error instanceof APIError) {

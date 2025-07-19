@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { Key, RefreshCw, Eye, EyeOff, Copy, ExternalLink } from "lucide-react";
+import { Key, RefreshCw, Eye, EyeOff, Copy, ExternalLink, Zap, Clock } from "lucide-react";
 import { FileUpload } from "../components/FileUpload";
 import backend from "~backend/client";
 
@@ -30,6 +30,11 @@ export function TokenPage() {
     privateKeyJwt: "",
     certificateContent: "",
     privateKeyContent: "",
+  });
+
+  const [poolRequest, setPoolRequest] = useState({
+    clientId: "",
+    banco: "",
   });
 
   const handleGenerateToken = async () => {
@@ -85,6 +90,39 @@ export function TokenPage() {
       toast({
         title: "Erro",
         description: "Falha ao gerar token JWT. Verifique suas credenciais.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGetPoolToken = async () => {
+    if (!poolRequest.clientId || !poolRequest.banco) {
+      toast({
+        title: "Erro",
+        description: "Client ID e Banco são obrigatórios",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await backend.auth.getPoolToken({
+        clientId: poolRequest.clientId,
+        banco: poolRequest.banco,
+      });
+      setTokenData(response);
+      toast({
+        title: "Sucesso",
+        description: `Token obtido do ${poolRequest.banco === "ITAU" ? "pool" : "cache"}!`,
+      });
+    } catch (error) {
+      console.error("Erro ao obter token do pool:", error);
+      toast({
+        title: "Erro",
+        description: "Falha ao obter token. Verifique se já existe um token gerado.",
         variant: "destructive",
       });
     } finally {
@@ -150,12 +188,88 @@ export function TokenPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="credentials" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 text-xs md:text-sm">
+      <Tabs defaultValue="pool" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4 text-xs md:text-sm">
+          <TabsTrigger value="pool" className="px-2 md:px-4">Pool Otimizado</TabsTrigger>
           <TabsTrigger value="credentials" className="px-2 md:px-4">Client Credentials</TabsTrigger>
           <TabsTrigger value="jwt" className="px-2 md:px-4">JWT + mTLS</TabsTrigger>
           <TabsTrigger value="typebot" className="px-2 md:px-4">Para Typebot</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="pool">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg md:text-xl flex items-center space-x-2">
+                <Zap className="h-5 w-5 text-yellow-600" />
+                <span>Pool de Tokens Otimizado</span>
+              </CardTitle>
+              <CardDescription className="text-sm md:text-base">
+                Obtenha tokens de forma otimizada para alta demanda. Itaú usa pool de múltiplos tokens, Inter usa cache de longa duração.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                <h3 className="font-semibold text-blue-800 mb-2">Estratégias por Banco:</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <h4 className="font-medium text-blue-700">Itaú (5 minutos)</h4>
+                    <ul className="text-blue-600 space-y-1">
+                      <li>• Pool de 3-5 tokens simultâneos</li>
+                      <li>• Distribuição round-robin</li>
+                      <li>• Renovação proativa</li>
+                      <li>• Ideal para alta demanda</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-blue-700">Inter (2 anos)</h4>
+                    <ul className="text-blue-600 space-y-1">
+                      <li>• Token único de longa duração</li>
+                      <li>• Cache inteligente</li>
+                      <li>• Renovação apenas quando necessário</li>
+                      <li>• Máxima eficiência</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="poolClientId">Client ID</Label>
+                  <Input
+                    id="poolClientId"
+                    value={poolRequest.clientId}
+                    onChange={(e) => setPoolRequest({ ...poolRequest, clientId: e.target.value })}
+                    placeholder="Seu Client ID"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="poolBanco">Banco</Label>
+                  <Select value={poolRequest.banco} onValueChange={(value) => setPoolRequest({ ...poolRequest, banco: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o banco" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {bancos.map((banco) => (
+                        <SelectItem key={banco.value} value={banco.value}>
+                          {banco.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <Button onClick={handleGetPoolToken} disabled={loading} className="w-full">
+                <Zap className="h-4 w-4 mr-2" />
+                {loading ? "Obtendo..." : "Obter Token do Pool"}
+              </Button>
+
+              <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded-md">
+                <strong>Nota:</strong> Este método requer que você já tenha gerado pelo menos um token usando as abas "Client Credentials" ou "JWT + mTLS".
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="credentials">
           <Card>
@@ -323,12 +437,59 @@ export function TokenPage() {
                 <span>Configuração para Typebot</span>
               </CardTitle>
               <CardDescription className="text-sm md:text-base">
-                URLs, headers e bodies para usar no Typebot
+                URLs, headers e bodies para usar no Typebot com otimizações de pool
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">
-                <h3 className="text-base md:text-lg font-semibold">1. Gerar Token</h3>
+                <h3 className="text-base md:text-lg font-semibold flex items-center space-x-2">
+                  <Zap className="h-5 w-5 text-yellow-600" />
+                  <span>1. Obter Token do Pool (Recomendado)</span>
+                </h3>
+                <div className="bg-gray-50 p-3 md:p-4 rounded-md space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">URL:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/auth/pool/{{clientId}}")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
+                    https://token.bigcorps.com.br/auth/pool/{"{{clientId}}"}
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Método:</Label>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm">GET</code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Query Parameters:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard("banco={{banco}}")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm">
+                    banco={"{{banco}}"}
+                  </code>
+                  
+                  <div className="bg-green-50 border border-green-200 rounded p-2 mt-2">
+                    <p className="text-xs text-green-700">
+                      <strong>Vantagem:</strong> Automaticamente obtém o melhor token disponível do pool (Itaú) ou cache (Inter)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="text-base md:text-lg font-semibold">2. Gerar Token Manual</h3>
                 <div className="bg-gray-50 p-3 md:p-4 rounded-md space-y-2">
                   <div className="flex items-center justify-between">
                     <Label className="font-medium text-sm">URL:</Label>
@@ -392,7 +553,7 @@ export function TokenPage() {
               </div>
 
               <div className="space-y-3">
-                <h3 className="text-base md:text-lg font-semibold">2. Criar Pagamento PIX</h3>
+                <h3 className="text-base md:text-lg font-semibold">3. Criar Pagamento PIX</h3>
                 <div className="bg-gray-50 p-3 md:p-4 rounded-md space-y-2">
                   <div className="flex items-center justify-between">
                     <Label className="font-medium text-sm">URL:</Label>
@@ -461,179 +622,46 @@ export function TokenPage() {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <h3 className="text-base md:text-lg font-semibold">3. Gerar QR Code PIX</h3>
-                <div className="bg-gray-50 p-3 md:p-4 rounded-md space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="font-medium text-sm">URL:</Label>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/pix/recebimento")}
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
-                    https://token.bigcorps.com.br/pix/recebimento
-                  </code>
-                  
-                  <div className="flex items-center justify-between">
-                    <Label className="font-medium text-sm">Body:</Label>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => copyToClipboard(JSON.stringify({
-                        "banco": "{{banco}}",
-                        "clientId": "{{clientId}}",
-                        "accessToken": "{{accessToken}}",
-                        "valor": "{{valor}}",
-                        "chaveRecebimento": "{{chaveRecebimento}}",
-                        "tipoChave": "{{tipoChave}}",
-                        "descricao": "{{descricao}}"
-                      }, null, 2))}
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <code className="block bg-white p-2 rounded border text-xs md:text-sm whitespace-pre overflow-x-auto">
-                    {JSON.stringify({
-                      "banco": "{{banco}}",
-                      "clientId": "{{clientId}}",
-                      "accessToken": "{{accessToken}}",
-                      "valor": "{{valor}}",
-                      "chaveRecebimento": "{{chaveRecebimento}}",
-                      "tipoChave": "{{tipoChave}}",
-                      "descricao": "{{descricao}}"
-                    }, null, 2)}
-                  </code>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <h3 className="text-base md:text-lg font-semibold">4. Criar Boleto</h3>
-                <div className="bg-gray-50 p-3 md:p-4 rounded-md space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="font-medium text-sm">URL:</Label>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/boleto/criar")}
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
-                    https://token.bigcorps.com.br/boleto/criar
-                  </code>
-                  
-                  <div className="flex items-center justify-between">
-                    <Label className="font-medium text-sm">Body:</Label>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => copyToClipboard(JSON.stringify({
-                        "banco": "{{banco}}",
-                        "clientId": "{{clientId}}",
-                        "accessToken": "{{accessToken}}",
-                        "valor": "{{valor}}",
-                        "vencimento": "{{vencimento}}",
-                        "nomePagador": "{{nomePagador}}",
-                        "cpfCnpjPagador": "{{cpfCnpjPagador}}",
-                        "enderecoPagador": {
-                          "logradouro": "{{logradouro}}",
-                          "numero": "{{numero}}",
-                          "bairro": "{{bairro}}",
-                          "cidade": "{{cidade}}",
-                          "uf": "{{uf}}",
-                          "cep": "{{cep}}"
-                        }
-                      }, null, 2))}
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <code className="block bg-white p-2 rounded border text-xs md:text-sm whitespace-pre overflow-x-auto">
-                    {JSON.stringify({
-                      "banco": "{{banco}}",
-                      "clientId": "{{clientId}}",
-                      "accessToken": "{{accessToken}}",
-                      "valor": "{{valor}}",
-                      "vencimento": "{{vencimento}}",
-                      "nomePagador": "{{nomePagador}}",
-                      "cpfCnpjPagador": "{{cpfCnpjPagador}}",
-                      "enderecoPagador": {
-                        "logradouro": "{{logradouro}}",
-                        "numero": "{{numero}}",
-                        "bairro": "{{bairro}}",
-                        "cidade": "{{cidade}}",
-                        "uf": "{{uf}}",
-                        "cep": "{{cep}}"
-                      }
-                    }, null, 2)}
-                  </code>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <h3 className="text-base md:text-lg font-semibold">5. Consultar Saldo</h3>
-                <div className="bg-gray-50 p-3 md:p-4 rounded-md space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="font-medium text-sm">URL:</Label>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/account/saldo")}
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
-                    https://token.bigcorps.com.br/account/saldo
-                  </code>
-                  
-                  <div className="flex items-center justify-between">
-                    <Label className="font-medium text-sm">Método:</Label>
-                  </div>
-                  <code className="block bg-white p-2 rounded border text-xs md:text-sm">GET</code>
-                  
-                  <div className="flex items-center justify-between">
-                    <Label className="font-medium text-sm">Body:</Label>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => copyToClipboard(JSON.stringify({
-                        "banco": "{{banco}}",
-                        "clientId": "{{clientId}}",
-                        "accessToken": "{{accessToken}}",
-                        "agencia": "{{agencia}}",
-                        "conta": "{{conta}}"
-                      }, null, 2))}
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <code className="block bg-white p-2 rounded border text-xs md:text-sm whitespace-pre overflow-x-auto">
-                    {JSON.stringify({
-                      "banco": "{{banco}}",
-                      "clientId": "{{clientId}}",
-                      "accessToken": "{{accessToken}}",
-                      "agencia": "{{agencia}}",
-                      "conta": "{{conta}}"
-                    }, null, 2)}
-                  </code>
-                </div>
-              </div>
-
               <div className="bg-blue-50 border border-blue-200 rounded-md p-3 md:p-4">
-                <h4 className="font-semibold text-blue-800 mb-2 text-sm md:text-base">Observações para Typebot:</h4>
-                <ul className="text-xs md:text-sm text-blue-700 space-y-1">
+                <h4 className="font-semibold text-blue-800 mb-2 text-sm md:text-base flex items-center space-x-2">
+                  <Clock className="h-4 w-4" />
+                  <span>Estratégias de Token por Banco:</span>
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h5 className="font-medium text-blue-700 mb-1">Itaú (5 minutos)</h5>
+                    <ul className="text-xs md:text-sm text-blue-600 space-y-1">
+                      <li>• Use sempre o endpoint de pool</li>
+                      <li>• Sistema mantém 3-5 tokens válidos</li>
+                      <li>• Renovação automática proativa</li>
+                      <li>• Ideal para alta demanda</li>
+                      <li>• Fallback automático se um token falha</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h5 className="font-medium text-blue-700 mb-1">Inter (2 anos)</h5>
+                    <ul className="text-xs md:text-sm text-blue-600 space-y-1">
+                      <li>• Gere o token uma vez</li>
+                      <li>• Cache localmente por até 1 ano</li>
+                      <li>• Use o endpoint de pool para otimização</li>
+                      <li>• Renovação apenas quando necessário</li>
+                      <li>• Máxima eficiência e economia</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 md:p-4">
+                <h4 className="font-semibold text-yellow-800 mb-2 text-sm md:text-base">Observações para Typebot:</h4>
+                <ul className="text-xs md:text-sm text-yellow-700 space-y-1">
+                  <li>• <strong>Recomendado:</strong> Use sempre o endpoint de pool para obter tokens</li>
                   <li>• Substitua as variáveis {"{{variavel}}"} pelos valores reais ou variáveis do Typebot</li>
                   <li>• Para banco use: ITAU ou INTER</li>
                   <li>• O certificado e chave privada devem estar em formato Base64</li>
-                  <li>• Todos os endpoints retornam JSON</li>
-                  <li>• O token expira em 5 minutos (300 segundos)</li>
+                  <li>• <strong>Itaú:</strong> Pool automático, sem necessidade de gerenciar expiração</li>
+                  <li>• <strong>Inter:</strong> Cache inteligente, token válido por 2 anos</li>
                   <li>• Para tipos de chave PIX use: CPF, CNPJ, EMAIL, TELEFONE, CHAVE_ALEATORIA</li>
+                  <li>• Implemente retry automático para máxima confiabilidade</li>
                 </ul>
               </div>
             </CardContent>
@@ -644,7 +672,10 @@ export function TokenPage() {
       {tokenData && (
         <Card className="bg-green-50 border-green-200">
           <CardHeader>
-            <CardTitle className="text-green-800 text-lg md:text-xl">Token Gerado com Sucesso</CardTitle>
+            <CardTitle className="text-green-800 text-lg md:text-xl flex items-center space-x-2">
+              <span>Token Gerado com Sucesso</span>
+              {tokenData.strategy === "pool" && <Zap className="h-5 w-5 text-yellow-600" />}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -681,7 +712,35 @@ export function TokenPage() {
                   <code className="text-xs md:text-sm">{new Date(tokenData.generatedAt).toLocaleString()}</code>
                 </div>
               </div>
+              {tokenData.remainingTime !== undefined && (
+                <div>
+                  <Label className="text-sm font-medium text-green-700">Tempo Restante</Label>
+                  <div className="mt-1 p-3 bg-white border border-green-200 rounded-md">
+                    <code className="text-xs md:text-sm">{tokenData.remainingTime} segundos</code>
+                  </div>
+                </div>
+              )}
+              {tokenData.poolId && (
+                <div>
+                  <Label className="text-sm font-medium text-green-700">Pool ID</Label>
+                  <div className="mt-1 p-3 bg-white border border-green-200 rounded-md">
+                    <code className="text-xs md:text-sm">{tokenData.poolId}</code>
+                  </div>
+                </div>
+              )}
             </div>
+            
+            {tokenData.strategy && (
+              <div className="bg-white border border-green-200 rounded-md p-3">
+                <Label className="text-sm font-medium text-green-700">Estratégia</Label>
+                <div className="mt-1 flex items-center space-x-2">
+                  {tokenData.strategy === "pool" && <Zap className="h-4 w-4 text-yellow-600" />}
+                  <span className="text-sm text-green-600 capitalize">
+                    {tokenData.strategy === "pool" ? "Pool Otimizado" : "Token Único"}
+                  </span>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
