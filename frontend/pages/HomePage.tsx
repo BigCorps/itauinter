@@ -110,7 +110,7 @@ export function HomePage() {
                 <li>• Emissão de Boletos</li>
                 <li>• Consulta de Saldo e Extrato</li>
                 <li>• Notificações Webhook</li>
-                <li>• Integração com Typebot</li>
+                <li>• Integração API</li>
               </ul>
             </div>
           </div>
