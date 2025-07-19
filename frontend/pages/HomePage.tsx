@@ -7,7 +7,7 @@ export function HomePage() {
   const features = [
     {
       title: "Geração de Token",
-      description: "Gere tokens de acesso para as APIs do Itaú usando client credentials ou JWT",
+      description: "Gere tokens de acesso para as APIs do Itaú e Inter usando client credentials ou JWT",
       icon: Key,
       href: "/token",
       color: "text-blue-600",
@@ -35,7 +35,7 @@ export function HomePage() {
     },
     {
       title: "Webhooks",
-      description: "Receba e gerencie notificações em tempo real do Itaú",
+      description: "Receba e gerencie notificações em tempo real dos bancos",
       icon: Webhook,
       href: "/webhook",
       color: "text-red-600",
@@ -46,10 +46,10 @@ export function HomePage() {
     <div className="space-y-8">
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold text-gray-900">
-          Sistema de Token Itaú
+          Sistema de Token Bancário
         </h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Plataforma completa para integração com as APIs do Banco Itaú. 
+          Plataforma completa para integração com as APIs dos Bancos Itaú e Inter. 
           Gerencie tokens, processe pagamentos PIX, emita boletos e muito mais.
         </p>
       </div>
@@ -89,8 +89,8 @@ export function HomePage() {
         </CardHeader>
         <CardContent className="space-y-4 text-orange-700">
           <p>
-            Este sistema foi desenvolvido para facilitar a integração com as APIs do Banco Itaú,
-            seguindo todas as diretrizes de segurança e autenticação exigidas pelo banco.
+            Este sistema foi desenvolvido para facilitar a integração com as APIs dos Bancos Itaú e Inter,
+            seguindo todas as diretrizes de segurança e autenticação exigidas pelos bancos.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -100,6 +100,7 @@ export function HomePage() {
                 <li>• Suporte a JWT para maior segurança</li>
                 <li>• Renovação automática de tokens</li>
                 <li>• Interface intuitiva e responsiva</li>
+                <li>• Suporte multi-banco (Itaú e Inter)</li>
               </ul>
             </div>
             <div>
@@ -109,6 +110,7 @@ export function HomePage() {
                 <li>• Emissão de Boletos</li>
                 <li>• Consulta de Saldo e Extrato</li>
                 <li>• Notificações Webhook</li>
+                <li>• Integração com Typebot</li>
               </ul>
             </div>
           </div>

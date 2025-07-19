@@ -1,6 +1,6 @@
-# Sistema de Token Itaú
+# Sistema de Token Bancário
 
-Sistema completo para integração com as APIs do Banco Itaú, desenvolvido com Encore.ts e React.
+Sistema completo para integração com as APIs dos Bancos Itaú e Inter, desenvolvido com Encore.ts e React.
 
 ## Funcionalidades
 
@@ -11,6 +11,7 @@ Sistema completo para integração com as APIs do Banco Itaú, desenvolvido com 
 - **Armazenamento Seguro**: Credenciais e certificados são armazenados de forma segura
 - **Upload de Arquivos**: Suporte para upload de certificados e chaves privadas
 - **Conversão Base64**: Conversão automática para Base64
+- **Suporte Multi-Banco**: Itaú e Inter com suas respectivas especificações
 
 ### 💳 PIX
 - **Pagamentos PIX**: Envie pagamentos para qualquer chave PIX
@@ -30,7 +31,7 @@ Sistema completo para integração com as APIs do Banco Itaú, desenvolvido com 
 - **Múltiplas Contas**: Suporte a diferentes agências e contas
 
 ### 🔔 Webhooks
-- **Notificações em Tempo Real**: Receba eventos do Itaú automaticamente
+- **Notificações em Tempo Real**: Receba eventos dos bancos automaticamente
 - **Histórico Completo**: Visualize todas as notificações recebidas
 - **Filtros Avançados**: Filtre por tipo de evento e período
 - **Processamento Automático**: Eventos são processados e armazenados automaticamente
@@ -47,6 +48,7 @@ Sistema completo para integração com as APIs do Banco Itaú, desenvolvido com 
 - **Produção**: `https://token.bigcorps.com.br`
 - **STS Itaú**: `https://sts.itau.com.br`
 - **APIs Itaú**: `https://api.itau.com.br`
+- **APIs Inter**: `https://cdpj.partners.bancointer.com.br`
 
 ### Endpoints do Sistema
 
@@ -88,6 +90,7 @@ Sistema completo para integração com as APIs do Banco Itaú, desenvolvido com 
 **Body:**
 ```json
 {
+  "banco": "{{banco}}",
   "clientId": "{{clientId}}",
   "clientSecret": "{{clientSecret}}",
   "certificateContent": "{{certificateBase64}}",
@@ -108,6 +111,7 @@ Sistema completo para integração com as APIs do Banco Itaú, desenvolvido com 
 **Body:**
 ```json
 {
+  "banco": "{{banco}}",
   "clientId": "{{clientId}}",
   "accessToken": "{{accessToken}}",
   "valor": {{valor}},
@@ -131,6 +135,7 @@ Sistema completo para integração com as APIs do Banco Itaú, desenvolvido com 
 **Body:**
 ```json
 {
+  "banco": "{{banco}}",
   "clientId": "{{clientId}}",
   "accessToken": "{{accessToken}}",
   "valor": {{valor}},
@@ -153,6 +158,7 @@ Sistema completo para integração com as APIs do Banco Itaú, desenvolvido com 
 **Body:**
 ```json
 {
+  "banco": "{{banco}}",
   "clientId": "{{clientId}}",
   "accessToken": "{{accessToken}}",
   "valor": {{valor}},
@@ -183,6 +189,7 @@ Sistema completo para integração com as APIs do Banco Itaú, desenvolvido com 
 **Body:**
 ```json
 {
+  "banco": "{{banco}}",
   "clientId": "{{clientId}}",
   "accessToken": "{{accessToken}}",
   "agencia": "{{agencia}}",
@@ -207,6 +214,7 @@ Sistema completo para integração com as APIs do Banco Itaú, desenvolvido com 
 **Body:**
 ```json
 {
+  "banco": "{{banco}}",
   "clientId": "{{clientId}}",
   "accessToken": "{{accessToken}}",
   "agencia": "{{agencia}}",
@@ -227,6 +235,7 @@ Sistema completo para integração com as APIs do Banco Itaú, desenvolvido com 
 **Body:**
 ```json
 {
+  "banco": "{{banco}}",
   "clientId": "{{clientId}}",
   "accessToken": "{{accessToken}}"
 }
@@ -245,6 +254,7 @@ Sistema completo para integração com as APIs do Banco Itaú, desenvolvido com 
 **Body:**
 ```json
 {
+  "banco": "{{banco}}",
   "clientId": "{{clientId}}",
   "accessToken": "{{accessToken}}"
 }
@@ -256,6 +266,10 @@ Sistema completo para integração com as APIs do Banco Itaú, desenvolvido com 
 - Substitua `{{variavel}}` pelos valores reais ou variáveis do Typebot
 - Use variáveis do Typebot para capturar dados do usuário
 - Armazene o `accessToken` em uma variável para reutilização
+
+### Bancos Suportados
+- `ITAU` - Banco Itaú
+- `INTER` - Banco Inter
 
 ### Certificados
 - O certificado e chave privada devem estar em formato **Base64**
@@ -282,7 +296,7 @@ Sistema completo para integração com as APIs do Banco Itaú, desenvolvido com 
 
 ## Configuração do Webhook
 
-Para receber notificações automáticas do Itaú, configure a seguinte URL no painel do banco:
+Para receber notificações automáticas dos bancos, configure a seguinte URL no painel do banco:
 
 ```
 https://token.bigcorps.com.br/webhook/notification
@@ -320,4 +334,4 @@ Para dúvidas ou problemas:
 
 ## Licença
 
-Este sistema é proprietário e destinado exclusivamente para integração com as APIs do Banco Itaú.
+Este sistema é proprietário e destinado exclusivamente para integração com as APIs dos Bancos Itaú e Inter.

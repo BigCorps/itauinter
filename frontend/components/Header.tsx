@@ -19,7 +19,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-2">
             <Building2 className="h-8 w-8 text-orange-600" />
-            <span className="text-xl font-bold text-gray-900">Sistema Token Itaú</span>
+            <span className="text-xl font-bold text-gray-900">Sistema Token Bancário</span>
           </div>
           
           <nav className="flex space-x-1">

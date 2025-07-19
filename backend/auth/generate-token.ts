@@ -7,6 +7,7 @@ const authDB = new SQLDatabase("auth", {
 });
 
 interface GenerateTokenRequest {
+  banco: "ITAU" | "INTER";
   clientId: string;
   clientSecret: string;
   certificateContent: string;
@@ -26,15 +27,15 @@ export const generateToken = api<GenerateTokenRequest, TokenResponse>(
   async (req) => {
     try {
       // Validar se os campos obrigatórios estão presentes
-      if (!req.clientId || !req.clientSecret || !req.certificateContent || !req.privateKeyContent) {
+      if (!req.banco || !req.clientId || !req.clientSecret || !req.certificateContent || !req.privateKeyContent) {
         throw APIError.invalidArgument("Todos os campos são obrigatórios");
       }
 
       // Salvar as credenciais no banco de dados
       await authDB.exec`
-        INSERT INTO credentials (client_id, client_secret, certificate_content, private_key_content, created_at)
-        VALUES (${req.clientId}, ${req.clientSecret}, ${req.certificateContent}, ${req.privateKeyContent}, NOW())
-        ON CONFLICT (client_id) 
+        INSERT INTO credentials (banco, client_id, client_secret, certificate_content, private_key_content, created_at)
+        VALUES (${req.banco}, ${req.clientId}, ${req.clientSecret}, ${req.certificateContent}, ${req.privateKeyContent}, NOW())
+        ON CONFLICT (banco, client_id) 
         DO UPDATE SET 
           client_secret = ${req.clientSecret},
           certificate_content = ${req.certificateContent},
@@ -42,17 +43,37 @@ export const generateToken = api<GenerateTokenRequest, TokenResponse>(
           updated_at = NOW()
       `;
 
-      // Fazer a requisição para o STS do Itaú
-      const tokenResponse = await fetch("https://sts.itau.com.br/api/oauth/token", {
+      let tokenResponse: Response;
+      let tokenUrl: string;
+      let requestBody: URLSearchParams;
+
+      if (req.banco === "ITAU") {
+        // Fazer a requisição para o STS do Itaú
+        tokenUrl = "https://sts.itau.com.br/api/oauth/token";
+        requestBody = new URLSearchParams({
+          grant_type: "client_credentials",
+          client_id: req.clientId,
+          client_secret: req.clientSecret,
+        });
+      } else if (req.banco === "INTER") {
+        // Fazer a requisição para o OAuth do Inter
+        tokenUrl = "https://cdpj.partners.bancointer.com.br/oauth/v2/token";
+        requestBody = new URLSearchParams({
+          grant_type: "client_credentials",
+          client_id: req.clientId,
+          client_secret: req.clientSecret,
+          scope: "pix-read pix-write boleto-read boleto-write conta-read",
+        });
+      } else {
+        throw APIError.invalidArgument("Banco não suportado");
+      }
+
+      tokenResponse = await fetch(tokenUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: new URLSearchParams({
-          grant_type: "client_credentials",
-          client_id: req.clientId,
-          client_secret: req.clientSecret,
-        }),
+        body: requestBody,
       });
 
       if (!tokenResponse.ok) {
@@ -64,8 +85,8 @@ export const generateToken = api<GenerateTokenRequest, TokenResponse>(
 
       // Salvar o token gerado
       await authDB.exec`
-        INSERT INTO tokens (client_id, access_token, token_type, expires_in, generated_at)
-        VALUES (${req.clientId}, ${tokenData.access_token}, ${tokenData.token_type}, ${tokenData.expires_in}, NOW())
+        INSERT INTO tokens (banco, client_id, access_token, token_type, expires_in, generated_at)
+        VALUES (${req.banco}, ${req.clientId}, ${tokenData.access_token}, ${tokenData.token_type}, ${tokenData.expires_in}, NOW())
       `;
 
       return {

@@ -16,6 +16,7 @@ export function PixPage() {
   const [pixResult, setPixResult] = useState<any>(null);
 
   const [paymentData, setPaymentData] = useState({
+    banco: "",
     clientId: "",
     accessToken: "",
     valor: "",
@@ -26,6 +27,7 @@ export function PixPage() {
   });
 
   const [receiveData, setReceiveData] = useState({
+    banco: "",
     clientId: "",
     accessToken: "",
     valor: "",
@@ -35,16 +37,17 @@ export function PixPage() {
   });
 
   const [statusData, setStatusData] = useState({
+    banco: "",
     clientId: "",
     accessToken: "",
     idTransacao: "",
   });
 
   const handleCreatePayment = async () => {
-    if (!paymentData.clientId || !paymentData.accessToken || !paymentData.valor || !paymentData.chaveDestinatario || !paymentData.tipoChave) {
+    if (!paymentData.banco || !paymentData.clientId || !paymentData.accessToken || !paymentData.valor || !paymentData.chaveDestinatario || !paymentData.tipoChave) {
       toast({
         title: "Erro",
-        description: "Campos obrigatórios: Client ID, Access Token, Valor, Chave e Tipo de Chave",
+        description: "Campos obrigatórios: Banco, Client ID, Access Token, Valor, Chave e Tipo de Chave",
         variant: "destructive",
       });
       return;
@@ -74,10 +77,10 @@ export function PixPage() {
   };
 
   const handleCreateReceive = async () => {
-    if (!receiveData.clientId || !receiveData.accessToken || !receiveData.chaveRecebimento || !receiveData.tipoChave) {
+    if (!receiveData.banco || !receiveData.clientId || !receiveData.accessToken || !receiveData.chaveRecebimento || !receiveData.tipoChave) {
       toast({
         title: "Erro",
-        description: "Campos obrigatórios: Client ID, Access Token, Chave e Tipo de Chave",
+        description: "Campos obrigatórios: Banco, Client ID, Access Token, Chave e Tipo de Chave",
         variant: "destructive",
       });
       return;
@@ -107,7 +110,7 @@ export function PixPage() {
   };
 
   const handleCheckStatus = async () => {
-    if (!statusData.clientId || !statusData.accessToken || !statusData.idTransacao) {
+    if (!statusData.banco || !statusData.clientId || !statusData.accessToken || !statusData.idTransacao) {
       toast({
         title: "Erro",
         description: "Todos os campos são obrigatórios",
@@ -135,6 +138,11 @@ export function PixPage() {
       setLoading(false);
     }
   };
+
+  const bancos = [
+    { value: "ITAU", label: "Banco Itaú" },
+    { value: "INTER", label: "Banco Inter" },
+  ];
 
   const tiposChave = [
     { value: "CPF", label: "CPF" },
@@ -172,6 +180,22 @@ export function PixPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="payBanco">Banco</Label>
+                <Select value={paymentData.banco} onValueChange={(value) => setPaymentData({ ...paymentData, banco: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o banco" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bancos.map((banco) => (
+                      <SelectItem key={banco.value} value={banco.value}>
+                        {banco.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="payClientId">Client ID</Label>
@@ -271,6 +295,22 @@ export function PixPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="recBanco">Banco</Label>
+                <Select value={receiveData.banco} onValueChange={(value) => setReceiveData({ ...receiveData, banco: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o banco" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bancos.map((banco) => (
+                      <SelectItem key={banco.value} value={banco.value}>
+                        {banco.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="recClientId">Client ID</Label>
@@ -359,6 +399,22 @@ export function PixPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="statusBanco">Banco</Label>
+                <Select value={statusData.banco} onValueChange={(value) => setStatusData({ ...statusData, banco: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o banco" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bancos.map((banco) => (
+                      <SelectItem key={banco.value} value={banco.value}>
+                        {banco.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="statusClientId">Client ID</Label>

@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { Key, RefreshCw, Eye, EyeOff, Copy, ExternalLink } from "lucide-react";
@@ -16,6 +17,7 @@ export function TokenPage() {
   const [tokenData, setTokenData] = useState<any>(null);
 
   const [credentials, setCredentials] = useState({
+    banco: "",
     clientId: "",
     clientSecret: "",
     certificateContent: "",
@@ -23,6 +25,7 @@ export function TokenPage() {
   });
 
   const [jwtCredentials, setJwtCredentials] = useState({
+    banco: "",
     clientId: "",
     privateKeyJwt: "",
     certificateContent: "",
@@ -30,7 +33,7 @@ export function TokenPage() {
   });
 
   const handleGenerateToken = async () => {
-    if (!credentials.clientId || !credentials.clientSecret || !credentials.certificateContent || !credentials.privateKeyContent) {
+    if (!credentials.banco || !credentials.clientId || !credentials.clientSecret || !credentials.certificateContent || !credentials.privateKeyContent) {
       toast({
         title: "Erro",
         description: "Todos os campos são obrigatórios",
@@ -60,7 +63,7 @@ export function TokenPage() {
   };
 
   const handleGenerateJWTToken = async () => {
-    if (!jwtCredentials.clientId || !jwtCredentials.privateKeyJwt || !jwtCredentials.certificateContent || !jwtCredentials.privateKeyContent) {
+    if (!jwtCredentials.banco || !jwtCredentials.clientId || !jwtCredentials.privateKeyJwt || !jwtCredentials.certificateContent || !jwtCredentials.privateKeyContent) {
       toast({
         title: "Erro",
         description: "Todos os campos são obrigatórios",
@@ -101,7 +104,10 @@ export function TokenPage() {
 
     setLoading(true);
     try {
-      const response = await backend.auth.refreshToken({ clientId: credentials.clientId });
+      const response = await backend.auth.refreshToken({ 
+        clientId: credentials.clientId,
+        banco: credentials.banco 
+      });
       setTokenData(response);
       toast({
         title: "Sucesso",
@@ -127,15 +133,20 @@ export function TokenPage() {
     });
   };
 
+  const bancos = [
+    { value: "ITAU", label: "Banco Itaú" },
+    { value: "INTER", label: "Banco Inter" },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold text-gray-900 flex items-center justify-center space-x-2">
           <Key className="h-8 w-8 text-blue-600" />
-          <span>Geração de Token Itaú</span>
+          <span>Gerar Token Bancário</span>
         </h1>
         <p className="text-gray-600">
-          Gere tokens de acesso para as APIs do Itaú usando diferentes métodos de autenticação
+          Gere tokens de acesso para as APIs dos bancos usando diferentes métodos de autenticação
         </p>
       </div>
 
@@ -155,6 +166,22 @@ export function TokenPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="banco">Banco</Label>
+                <Select value={credentials.banco} onValueChange={(value) => setCredentials({ ...credentials, banco: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o banco" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bancos.map((banco) => (
+                      <SelectItem key={banco.value} value={banco.value}>
+                        {banco.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="clientId">Client ID</Label>
@@ -162,7 +189,7 @@ export function TokenPage() {
                     id="clientId"
                     value={credentials.clientId}
                     onChange={(e) => setCredentials({ ...credentials, clientId: e.target.value })}
-                    placeholder="Seu Client ID do Itaú"
+                    placeholder="Seu Client ID"
                   />
                 </div>
                 <div className="space-y-2">
@@ -173,7 +200,7 @@ export function TokenPage() {
                       type={showSecrets ? "text" : "password"}
                       value={credentials.clientSecret}
                       onChange={(e) => setCredentials({ ...credentials, clientSecret: e.target.value })}
-                      placeholder="Seu Client Secret do Itaú"
+                      placeholder="Seu Client Secret"
                     />
                     <Button
                       type="button"
@@ -227,12 +254,28 @@ export function TokenPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
+                <Label htmlFor="jwtBanco">Banco</Label>
+                <Select value={jwtCredentials.banco} onValueChange={(value) => setJwtCredentials({ ...jwtCredentials, banco: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o banco" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bancos.map((banco) => (
+                      <SelectItem key={banco.value} value={banco.value}>
+                        {banco.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="jwtClientId">Client ID</Label>
                 <Input
                   id="jwtClientId"
                   value={jwtCredentials.clientId}
                   onChange={(e) => setJwtCredentials({ ...jwtCredentials, clientId: e.target.value })}
-                  placeholder="Seu Client ID do Itaú"
+                  placeholder="Seu Client ID"
                 />
               </div>
 
@@ -325,6 +368,7 @@ export function TokenPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => copyToClipboard(JSON.stringify({
+                        "banco": "{{banco}}",
                         "clientId": "{{clientId}}",
                         "clientSecret": "{{clientSecret}}",
                         "certificateContent": "{{certificateBase64}}",
@@ -336,6 +380,7 @@ export function TokenPage() {
                   </div>
                   <code className="block bg-white p-2 rounded border text-sm whitespace-pre">
                     {JSON.stringify({
+                      "banco": "{{banco}}",
                       "clientId": "{{clientId}}",
                       "clientSecret": "{{clientSecret}}",
                       "certificateContent": "{{certificateBase64}}",
@@ -387,6 +432,7 @@ export function TokenPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => copyToClipboard(JSON.stringify({
+                        "banco": "{{banco}}",
                         "clientId": "{{clientId}}",
                         "accessToken": "{{accessToken}}",
                         "valor": "{{valor}}",
@@ -401,6 +447,7 @@ export function TokenPage() {
                   </div>
                   <code className="block bg-white p-2 rounded border text-sm whitespace-pre">
                     {JSON.stringify({
+                      "banco": "{{banco}}",
                       "clientId": "{{clientId}}",
                       "accessToken": "{{accessToken}}",
                       "valor": "{{valor}}",
@@ -436,6 +483,7 @@ export function TokenPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => copyToClipboard(JSON.stringify({
+                        "banco": "{{banco}}",
                         "clientId": "{{clientId}}",
                         "accessToken": "{{accessToken}}",
                         "valor": "{{valor}}",
@@ -449,6 +497,7 @@ export function TokenPage() {
                   </div>
                   <code className="block bg-white p-2 rounded border text-sm whitespace-pre">
                     {JSON.stringify({
+                      "banco": "{{banco}}",
                       "clientId": "{{clientId}}",
                       "accessToken": "{{accessToken}}",
                       "valor": "{{valor}}",
@@ -483,6 +532,7 @@ export function TokenPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => copyToClipboard(JSON.stringify({
+                        "banco": "{{banco}}",
                         "clientId": "{{clientId}}",
                         "accessToken": "{{accessToken}}",
                         "valor": "{{valor}}",
@@ -504,6 +554,7 @@ export function TokenPage() {
                   </div>
                   <code className="block bg-white p-2 rounded border text-sm whitespace-pre">
                     {JSON.stringify({
+                      "banco": "{{banco}}",
                       "clientId": "{{clientId}}",
                       "accessToken": "{{accessToken}}",
                       "valor": "{{valor}}",
@@ -551,6 +602,7 @@ export function TokenPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => copyToClipboard(JSON.stringify({
+                        "banco": "{{banco}}",
                         "clientId": "{{clientId}}",
                         "accessToken": "{{accessToken}}",
                         "agencia": "{{agencia}}",
@@ -562,6 +614,7 @@ export function TokenPage() {
                   </div>
                   <code className="block bg-white p-2 rounded border text-sm whitespace-pre">
                     {JSON.stringify({
+                      "banco": "{{banco}}",
                       "clientId": "{{clientId}}",
                       "accessToken": "{{accessToken}}",
                       "agencia": "{{agencia}}",
@@ -575,6 +628,7 @@ export function TokenPage() {
                 <h4 className="font-semibold text-blue-800 mb-2">Observações para Typebot:</h4>
                 <ul className="text-sm text-blue-700 space-y-1">
                   <li>• Substitua as variáveis {"{{variavel}}"} pelos valores reais ou variáveis do Typebot</li>
+                  <li>• Para banco use: ITAU ou INTER</li>
                   <li>• O certificado e chave privada devem estar em formato Base64</li>
                   <li>• Todos os endpoints retornam JSON</li>
                   <li>• O token expira em 5 minutos (300 segundos)</li>

@@ -6,6 +6,7 @@ const webhookDB = new SQLDatabase("webhook", {
 });
 
 interface WebhookNotification {
+  banco?: "ITAU" | "INTER";
   eventType: string;
   eventId: string;
   timestamp: Date;
@@ -19,7 +20,7 @@ interface WebhookResponse {
   timestamp: Date;
 }
 
-// Recebe notificações webhook do Itaú
+// Recebe notificações webhook dos bancos
 export const receiveNotification = api<WebhookNotification, WebhookResponse>(
   { expose: true, method: "POST", path: "/webhook/notification" },
   async (req) => {
@@ -29,19 +30,21 @@ export const receiveNotification = api<WebhookNotification, WebhookResponse>(
         throw APIError.invalidArgument("Campos obrigatórios: eventType, eventId, data");
       }
 
+      const banco = req.banco || "ITAU";
+
       // Salvar a notificação no banco
       await webhookDB.exec`
         INSERT INTO webhook_notifications (
-          event_type, event_id, timestamp, data, target_id, created_at
+          banco, event_type, event_id, timestamp, data, target_id, created_at
         )
         VALUES (
-          ${req.eventType}, ${req.eventId}, ${req.timestamp.toISOString()}, 
+          ${banco}, ${req.eventType}, ${req.eventId}, ${req.timestamp.toISOString()}, 
           ${JSON.stringify(req.data)}, ${req.targetId || ""}, NOW()
         )
       `;
 
       // Processar a notificação baseado no tipo de evento
-      await processWebhookEvent(req);
+      await processWebhookEvent(req, banco);
 
       return {
         received: true,
@@ -57,25 +60,25 @@ export const receiveNotification = api<WebhookNotification, WebhookResponse>(
   }
 );
 
-async function processWebhookEvent(notification: WebhookNotification) {
+async function processWebhookEvent(notification: WebhookNotification, banco: string) {
   switch (notification.eventType) {
     case "PIX_RECEIVED":
       // Processar recebimento de PIX
-      console.log("PIX recebido:", notification.data);
+      console.log(`PIX recebido (${banco}):`, notification.data);
       break;
     case "PIX_PAYMENT_CONFIRMED":
       // Processar confirmação de pagamento PIX
-      console.log("Pagamento PIX confirmado:", notification.data);
+      console.log(`Pagamento PIX confirmado (${banco}):`, notification.data);
       break;
     case "BOLETO_PAID":
       // Processar pagamento de boleto
-      console.log("Boleto pago:", notification.data);
+      console.log(`Boleto pago (${banco}):`, notification.data);
       break;
     case "BOLETO_EXPIRED":
       // Processar vencimento de boleto
-      console.log("Boleto vencido:", notification.data);
+      console.log(`Boleto vencido (${banco}):`, notification.data);
       break;
     default:
-      console.log("Evento não reconhecido:", notification.eventType);
+      console.log(`Evento não reconhecido (${banco}):`, notification.eventType);
   }
 }

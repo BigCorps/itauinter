@@ -5,6 +5,7 @@ const authDB = SQLDatabase.named("auth");
 
 interface GetTokenRequest {
   clientId: string;
+  banco?: string;
 }
 
 interface GetTokenResponse {
@@ -20,7 +21,9 @@ export const getToken = api<GetTokenRequest, GetTokenResponse>(
   { expose: true, method: "GET", path: "/auth/token/:clientId" },
   async (req) => {
     try {
-      // Buscar o token mais recente para o client_id
+      const banco = req.banco || "ITAU";
+
+      // Buscar o token mais recente para o client_id e banco
       const tokenRow = await authDB.queryRow<{
         access_token: string;
         token_type: string;
@@ -29,13 +32,13 @@ export const getToken = api<GetTokenRequest, GetTokenResponse>(
       }>`
         SELECT access_token, token_type, expires_in, generated_at
         FROM tokens 
-        WHERE client_id = ${req.clientId}
+        WHERE client_id = ${req.clientId} AND banco = ${banco}
         ORDER BY generated_at DESC
         LIMIT 1
       `;
 
       if (!tokenRow) {
-        throw APIError.notFound("Token não encontrado para este client_id");
+        throw APIError.notFound("Token não encontrado para este client_id e banco");
       }
 
       // Verificar se o token expirou (5 minutos = 300 segundos)

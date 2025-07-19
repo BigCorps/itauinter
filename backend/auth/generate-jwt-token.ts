@@ -4,6 +4,7 @@ import { SQLDatabase } from "encore.dev/storage/sqldb";
 const authDB = SQLDatabase.named("auth");
 
 interface GenerateJWTTokenRequest {
+  banco: "ITAU" | "INTER";
   clientId: string;
   privateKeyJwt: string;
   certificateContent: string;
@@ -23,15 +24,15 @@ export const generateJWTToken = api<GenerateJWTTokenRequest, JWTTokenResponse>(
   async (req) => {
     try {
       // Validar se os campos obrigatórios estão presentes
-      if (!req.clientId || !req.privateKeyJwt || !req.certificateContent || !req.privateKeyContent) {
+      if (!req.banco || !req.clientId || !req.privateKeyJwt || !req.certificateContent || !req.privateKeyContent) {
         throw APIError.invalidArgument("Todos os campos são obrigatórios");
       }
 
       // Salvar as credenciais no banco de dados
       await authDB.exec`
-        INSERT INTO jwt_credentials (client_id, private_key_jwt, certificate_content, private_key_content, created_at)
-        VALUES (${req.clientId}, ${req.privateKeyJwt}, ${req.certificateContent}, ${req.privateKeyContent}, NOW())
-        ON CONFLICT (client_id) 
+        INSERT INTO jwt_credentials (banco, client_id, private_key_jwt, certificate_content, private_key_content, created_at)
+        VALUES (${req.banco}, ${req.clientId}, ${req.privateKeyJwt}, ${req.certificateContent}, ${req.privateKeyContent}, NOW())
+        ON CONFLICT (banco, client_id) 
         DO UPDATE SET 
           private_key_jwt = ${req.privateKeyJwt},
           certificate_content = ${req.certificateContent},
@@ -39,18 +40,41 @@ export const generateJWTToken = api<GenerateJWTTokenRequest, JWTTokenResponse>(
           updated_at = NOW()
       `;
 
-      // Fazer a requisição para o STS do Itaú usando JWT
-      const tokenResponse = await fetch("https://sts.itau.com.br/as/token.oauth2", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          grant_type: "urn:ietf:params:oauth:grant-type:client_credentials",
-          client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-          client_assertion: req.privateKeyJwt,
-        }),
-      });
+      let tokenResponse: Response;
+      let tokenUrl: string;
+
+      if (req.banco === "ITAU") {
+        // Fazer a requisição para o STS do Itaú usando JWT
+        tokenUrl = "https://sts.itau.com.br/as/token.oauth2";
+        tokenResponse = await fetch(tokenUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            grant_type: "urn:ietf:params:oauth:grant-type:client_credentials",
+            client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+            client_assertion: req.privateKeyJwt,
+          }),
+        });
+      } else if (req.banco === "INTER") {
+        // Para o Inter, JWT é usado de forma similar
+        tokenUrl = "https://cdpj.partners.bancointer.com.br/oauth/v2/token";
+        tokenResponse = await fetch(tokenUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            grant_type: "urn:ietf:params:oauth:grant-type:client_credentials",
+            client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+            client_assertion: req.privateKeyJwt,
+            scope: "pix-read pix-write boleto-read boleto-write conta-read",
+          }),
+        });
+      } else {
+        throw APIError.invalidArgument("Banco não suportado");
+      }
 
       if (!tokenResponse.ok) {
         const errorText = await tokenResponse.text();
@@ -61,8 +85,8 @@ export const generateJWTToken = api<GenerateJWTTokenRequest, JWTTokenResponse>(
 
       // Salvar o token gerado
       await authDB.exec`
-        INSERT INTO jwt_tokens (client_id, access_token, token_type, expires_in, generated_at)
-        VALUES (${req.clientId}, ${tokenData.access_token}, ${tokenData.token_type}, ${tokenData.expires_in}, NOW())
+        INSERT INTO jwt_tokens (banco, client_id, access_token, token_type, expires_in, generated_at)
+        VALUES (${req.banco}, ${req.clientId}, ${tokenData.access_token}, ${tokenData.token_type}, ${tokenData.expires_in}, NOW())
       `;
 
       return {
