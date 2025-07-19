@@ -283,7 +283,6 @@ export function TokenPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Gerar Token */}
               <div className="space-y-3">
                 <h3 className="text-lg font-semibold">1. Gerar Token</h3>
                 <div className="bg-gray-50 p-4 rounded-md space-y-2">
@@ -346,7 +345,6 @@ export function TokenPage() {
                 </div>
               </div>
 
-              {/* Criar PIX */}
               <div className="space-y-3">
                 <h3 className="text-lg font-semibold">2. Criar Pagamento PIX</h3>
                 <div className="bg-gray-50 p-4 rounded-md space-y-2">
@@ -415,7 +413,6 @@ export function TokenPage() {
                 </div>
               </div>
 
-              {/* Gerar QR Code PIX */}
               <div className="space-y-3">
                 <h3 className="text-lg font-semibold">3. Gerar QR Code PIX</h3>
                 <div className="bg-gray-50 p-4 rounded-md space-y-2">
@@ -463,7 +460,6 @@ export function TokenPage() {
                 </div>
               </div>
 
-              {/* Criar Boleto */}
               <div className="space-y-3">
                 <h3 className="text-lg font-semibold">4. Criar Boleto</h3>
                 <div className="bg-gray-50 p-4 rounded-md space-y-2">
@@ -527,7 +523,6 @@ export function TokenPage() {
                 </div>
               </div>
 
-              {/* Consultar Saldo */}
               <div className="space-y-3">
                 <h3 className="text-lg font-semibold">5. Consultar Saldo</h3>
                 <div className="bg-gray-50 p-4 rounded-md space-y-2">
@@ -579,7 +574,7 @@ export function TokenPage() {
               <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
                 <h4 className="font-semibold text-blue-800 mb-2">Observações para Typebot:</h4>
                 <ul className="text-sm text-blue-700 space-y-1">
-                  <li>• Substitua as variáveis {{variavel}} pelos valores reais ou variáveis do Typebot</li>
+                  <li>• Substitua as variáveis {"{{variavel}}"} pelos valores reais ou variáveis do Typebot</li>
                   <li>• O certificado e chave privada devem estar em formato Base64</li>
                   <li>• Todos os endpoints retornam JSON</li>
                   <li>• O token expira em 5 minutos (300 segundos)</li>
