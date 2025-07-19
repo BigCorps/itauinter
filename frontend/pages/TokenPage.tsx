@@ -193,7 +193,7 @@ export function TokenPage() {
           <TabsTrigger value="pool" className="px-2 md:px-4">Pool Otimizado</TabsTrigger>
           <TabsTrigger value="credentials" className="px-2 md:px-4">Client Credentials</TabsTrigger>
           <TabsTrigger value="jwt" className="px-2 md:px-4">JWT + mTLS</TabsTrigger>
-          <TabsTrigger value="typebot" className="px-2 md:px-4">Para Typebot</TabsTrigger>
+          <TabsTrigger value="api" className="px-2 md:px-4">API</TabsTrigger>
         </TabsList>
 
         <TabsContent value="pool">
@@ -429,15 +429,15 @@ export function TokenPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="typebot">
+        <TabsContent value="api">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2 text-lg md:text-xl">
                 <ExternalLink className="h-5 w-5" />
-                <span>Configuração para Typebot</span>
+                <span>Documentação da API</span>
               </CardTitle>
               <CardDescription className="text-sm md:text-base">
-                URLs, headers e bodies para usar no Typebot com otimizações de pool
+                URLs, headers e bodies para integração com APIs externas
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -553,20 +553,20 @@ export function TokenPage() {
               </div>
 
               <div className="space-y-3">
-                <h3 className="text-base md:text-lg font-semibold">3. Criar Pagamento PIX</h3>
+                <h3 className="text-base md:text-lg font-semibold">3. Gerar Token JWT</h3>
                 <div className="bg-gray-50 p-3 md:p-4 rounded-md space-y-2">
                   <div className="flex items-center justify-between">
                     <Label className="font-medium text-sm">URL:</Label>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/pix/pagamento")}
+                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/auth/jwt-token")}
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
                   <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
-                    https://token.bigcorps.com.br/pix/pagamento
+                    https://token.bigcorps.com.br/auth/jwt-token
                   </code>
                   
                   <div className="flex items-center justify-between">
@@ -596,12 +596,9 @@ export function TokenPage() {
                       onClick={() => copyToClipboard(JSON.stringify({
                         "banco": "{{banco}}",
                         "clientId": "{{clientId}}",
-                        "accessToken": "{{accessToken}}",
-                        "valor": "{{valor}}",
-                        "chaveDestinatario": "{{chaveDestinatario}}",
-                        "tipoChave": "{{tipoChave}}",
-                        "descricao": "{{descricao}}",
-                        "nomeDestinatario": "{{nomeDestinatario}}"
+                        "privateKeyJwt": "{{privateKeyJwt}}",
+                        "certificateContent": "{{certificateBase64}}",
+                        "privateKeyContent": "{{privateKeyBase64}}"
                       }, null, 2))}
                     >
                       <Copy className="h-4 w-4" />
@@ -611,12 +608,9 @@ export function TokenPage() {
                     {JSON.stringify({
                       "banco": "{{banco}}",
                       "clientId": "{{clientId}}",
-                      "accessToken": "{{accessToken}}",
-                      "valor": "{{valor}}",
-                      "chaveDestinatario": "{{chaveDestinatario}}",
-                      "tipoChave": "{{tipoChave}}",
-                      "descricao": "{{descricao}}",
-                      "nomeDestinatario": "{{nomeDestinatario}}"
+                      "privateKeyJwt": "{{privateKeyJwt}}",
+                      "certificateContent": "{{certificateBase64}}",
+                      "privateKeyContent": "{{privateKeyBase64}}"
                     }, null, 2)}
                   </code>
                 </div>
@@ -652,15 +646,14 @@ export function TokenPage() {
               </div>
 
               <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 md:p-4">
-                <h4 className="font-semibold text-yellow-800 mb-2 text-sm md:text-base">Observações para Typebot:</h4>
+                <h4 className="font-semibold text-yellow-800 mb-2 text-sm md:text-base">Observações para Integração:</h4>
                 <ul className="text-xs md:text-sm text-yellow-700 space-y-1">
                   <li>• <strong>Recomendado:</strong> Use sempre o endpoint de pool para obter tokens</li>
-                  <li>• Substitua as variáveis {"{{variavel}}"} pelos valores reais ou variáveis do Typebot</li>
+                  <li>• Substitua as variáveis {"{{variavel}}"} pelos valores reais</li>
                   <li>• Para banco use: ITAU ou INTER</li>
                   <li>• O certificado e chave privada devem estar em formato Base64</li>
                   <li>• <strong>Itaú:</strong> Pool automático, sem necessidade de gerenciar expiração</li>
                   <li>• <strong>Inter:</strong> Cache inteligente, token válido por 2 anos</li>
-                  <li>• Para tipos de chave PIX use: CPF, CNPJ, EMAIL, TELEFONE, CHAVE_ALEATORIA</li>
                   <li>• Implemente retry automático para máxima confiabilidade</li>
                 </ul>
               </div>

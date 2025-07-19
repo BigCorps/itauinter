@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { Banknote, Search } from "lucide-react";
+import { Banknote, Search, ExternalLink, Copy } from "lucide-react";
 import backend from "~backend/client";
 
 export function BoletoPage() {
@@ -111,6 +111,14 @@ export function BoletoPage() {
     }
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Copiado!",
+      description: "Texto copiado para a área de transferência",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
@@ -124,9 +132,10 @@ export function BoletoPage() {
       </div>
 
       <Tabs defaultValue="create" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="create">Criar Boleto</TabsTrigger>
           <TabsTrigger value="status">Consultar Status</TabsTrigger>
+          <TabsTrigger value="api">API</TabsTrigger>
         </TabsList>
 
         <TabsContent value="create">
@@ -357,6 +366,189 @@ export function BoletoPage() {
               <Button onClick={handleCheckStatus} disabled={loading} className="w-full">
                 {loading ? "Consultando..." : "Consultar Status"}
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="api">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <ExternalLink className="h-5 w-5" />
+                <span>Documentação da API Boleto</span>
+              </CardTitle>
+              <CardDescription>
+                URLs, headers e bodies para integração com APIs de Boleto
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-3">
+                <h3 className="text-base md:text-lg font-semibold">1. Criar Boleto</h3>
+                <div className="bg-gray-50 p-3 md:p-4 rounded-md space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">URL:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/boleto/criar")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
+                    https://token.bigcorps.com.br/boleto/criar
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Método:</Label>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm">POST</code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Headers:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard('{"Content-Type": "application/json"}')}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm overflow-x-auto">
+                    {JSON.stringify({"Content-Type": "application/json"}, null, 2)}
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Body:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(JSON.stringify({
+                        "banco": "{{banco}}",
+                        "clientId": "{{clientId}}",
+                        "accessToken": "{{accessToken}}",
+                        "valor": "{{valor}}",
+                        "vencimento": "{{vencimento}}",
+                        "nomePagador": "{{nomePagador}}",
+                        "cpfCnpjPagador": "{{cpfCnpjPagador}}",
+                        "enderecoPagador": {
+                          "logradouro": "{{logradouro}}",
+                          "numero": "{{numero}}",
+                          "bairro": "{{bairro}}",
+                          "cidade": "{{cidade}}",
+                          "uf": "{{uf}}",
+                          "cep": "{{cep}}"
+                        }
+                      }, null, 2))}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm whitespace-pre overflow-x-auto">
+                    {JSON.stringify({
+                      "banco": "{{banco}}",
+                      "clientId": "{{clientId}}",
+                      "accessToken": "{{accessToken}}",
+                      "valor": "{{valor}}",
+                      "vencimento": "{{vencimento}}",
+                      "nomePagador": "{{nomePagador}}",
+                      "cpfCnpjPagador": "{{cpfCnpjPagador}}",
+                      "enderecoPagador": {
+                        "logradouro": "{{logradouro}}",
+                        "numero": "{{numero}}",
+                        "bairro": "{{bairro}}",
+                        "cidade": "{{cidade}}",
+                        "uf": "{{uf}}",
+                        "cep": "{{cep}}"
+                      }
+                    }, null, 2)}
+                  </code>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="text-base md:text-lg font-semibold">2. Consultar Status do Boleto</h3>
+                <div className="bg-gray-50 p-3 md:p-4 rounded-md space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">URL:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/boleto/status/{{nossoNumero}}")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
+                    https://token.bigcorps.com.br/boleto/status/{"{{nossoNumero}}"}
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Método:</Label>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm">GET</code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Headers:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard('{"Content-Type": "application/json"}')}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm overflow-x-auto">
+                    {JSON.stringify({"Content-Type": "application/json"}, null, 2)}
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Body:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(JSON.stringify({
+                        "banco": "{{banco}}",
+                        "clientId": "{{clientId}}",
+                        "accessToken": "{{accessToken}}"
+                      }, null, 2))}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm whitespace-pre overflow-x-auto">
+                    {JSON.stringify({
+                      "banco": "{{banco}}",
+                      "clientId": "{{clientId}}",
+                      "accessToken": "{{accessToken}}"
+                    }, null, 2)}
+                  </code>
+                </div>
+              </div>
+
+              <div className="bg-purple-50 border border-purple-200 rounded-md p-3 md:p-4">
+                <h4 className="font-semibold text-purple-800 mb-2 text-sm md:text-base">Campos Obrigatórios:</h4>
+                <ul className="text-xs md:text-sm text-purple-700 space-y-1">
+                  <li>• <strong>banco</strong> - ITAU ou INTER</li>
+                  <li>• <strong>valor</strong> - Valor do boleto em decimal (ex: 100.50)</li>
+                  <li>• <strong>vencimento</strong> - Data no formato YYYY-MM-DD</li>
+                  <li>• <strong>nomePagador</strong> - Nome completo do pagador</li>
+                  <li>• <strong>cpfCnpjPagador</strong> - CPF ou CNPJ do pagador</li>
+                  <li>• <strong>enderecoPagador</strong> - Endereço completo do pagador</li>
+                </ul>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 md:p-4">
+                <h4 className="font-semibold text-blue-800 mb-2 text-sm md:text-base">Observações:</h4>
+                <ul className="text-xs md:text-sm text-blue-700 space-y-1">
+                  <li>• Substitua as variáveis {"{{variavel}}"} pelos valores reais</li>
+                  <li>• O nossoNumero é retornado na criação do boleto</li>
+                  <li>• Use o accessToken obtido da API de autenticação</li>
+                  <li>• A data de vencimento deve ser futura</li>
+                  <li>• O CEP deve conter apenas números</li>
+                  <li>• Campos opcionais: complemento, descrição, instruções</li>
+                </ul>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

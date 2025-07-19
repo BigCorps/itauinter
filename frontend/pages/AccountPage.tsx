@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { Wallet, DollarSign, FileText } from "lucide-react";
+import { Wallet, DollarSign, FileText, ExternalLink, Copy } from "lucide-react";
 import backend from "~backend/client";
 
 export function AccountPage() {
@@ -93,6 +93,14 @@ export function AccountPage() {
     }
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Copiado!",
+      description: "Texto copiado para a área de transferência",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
@@ -106,9 +114,10 @@ export function AccountPage() {
       </div>
 
       <Tabs defaultValue="balance" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="balance">Consultar Saldo</TabsTrigger>
           <TabsTrigger value="statement">Consultar Extrato</TabsTrigger>
+          <TabsTrigger value="api">API</TabsTrigger>
         </TabsList>
 
         <TabsContent value="balance">
@@ -250,6 +259,172 @@ export function AccountPage() {
               <Button onClick={handleGetStatement} disabled={loading} className="w-full">
                 {loading ? "Consultando..." : "Consultar Extrato"}
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="api">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <ExternalLink className="h-5 w-5" />
+                <span>Documentação da API Conta</span>
+              </CardTitle>
+              <CardDescription>
+                URLs, headers e bodies para integração com APIs de Conta
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-3">
+                <h3 className="text-base md:text-lg font-semibold">1. Consultar Saldo</h3>
+                <div className="bg-gray-50 p-3 md:p-4 rounded-md space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">URL:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/account/saldo")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
+                    https://token.bigcorps.com.br/account/saldo
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Método:</Label>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm">GET</code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Headers:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard('{"Content-Type": "application/json"}')}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm overflow-x-auto">
+                    {JSON.stringify({"Content-Type": "application/json"}, null, 2)}
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Body:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(JSON.stringify({
+                        "banco": "{{banco}}",
+                        "clientId": "{{clientId}}",
+                        "accessToken": "{{accessToken}}",
+                        "agencia": "{{agencia}}",
+                        "conta": "{{conta}}"
+                      }, null, 2))}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm whitespace-pre overflow-x-auto">
+                    {JSON.stringify({
+                      "banco": "{{banco}}",
+                      "clientId": "{{clientId}}",
+                      "accessToken": "{{accessToken}}",
+                      "agencia": "{{agencia}}",
+                      "conta": "{{conta}}"
+                    }, null, 2)}
+                  </code>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="text-base md:text-lg font-semibold">2. Consultar Extrato</h3>
+                <div className="bg-gray-50 p-3 md:p-4 rounded-md space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">URL:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/account/extrato?dataInicio={{dataInicio}}&dataFim={{dataFim}}")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
+                    https://token.bigcorps.com.br/account/extrato?dataInicio={"{{dataInicio}}"}&dataFim={"{{dataFim}}"}
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Método:</Label>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm">GET</code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Headers:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard('{"Content-Type": "application/json"}')}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm overflow-x-auto">
+                    {JSON.stringify({"Content-Type": "application/json"}, null, 2)}
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Body:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(JSON.stringify({
+                        "banco": "{{banco}}",
+                        "clientId": "{{clientId}}",
+                        "accessToken": "{{accessToken}}",
+                        "agencia": "{{agencia}}",
+                        "conta": "{{conta}}"
+                      }, null, 2))}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm whitespace-pre overflow-x-auto">
+                    {JSON.stringify({
+                      "banco": "{{banco}}",
+                      "clientId": "{{clientId}}",
+                      "accessToken": "{{accessToken}}",
+                      "agencia": "{{agencia}}",
+                      "conta": "{{conta}}"
+                    }, null, 2)}
+                  </code>
+                </div>
+              </div>
+
+              <div className="bg-orange-50 border border-orange-200 rounded-md p-3 md:p-4">
+                <h4 className="font-semibold text-orange-800 mb-2 text-sm md:text-base">Campos Obrigatórios:</h4>
+                <ul className="text-xs md:text-sm text-orange-700 space-y-1">
+                  <li>• <strong>banco</strong> - ITAU ou INTER</li>
+                  <li>• <strong>agencia</strong> - Número da agência (ex: 0001)</li>
+                  <li>• <strong>conta</strong> - Número da conta com dígito (ex: 12345-6)</li>
+                  <li>• <strong>dataInicio</strong> - Data inicial no formato YYYY-MM-DD (apenas extrato)</li>
+                  <li>• <strong>dataFim</strong> - Data final no formato YYYY-MM-DD (apenas extrato)</li>
+                </ul>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 md:p-4">
+                <h4 className="font-semibold text-blue-800 mb-2 text-sm md:text-base">Observações:</h4>
+                <ul className="text-xs md:text-sm text-blue-700 space-y-1">
+                  <li>• Substitua as variáveis {"{{variavel}}"} pelos valores reais</li>
+                  <li>• Use o accessToken obtido da API de autenticação</li>
+                  <li>• Para extrato, as datas são passadas como query parameters</li>
+                  <li>• O período máximo para extrato é de 90 dias</li>
+                  <li>• Agência e conta devem estar no formato correto do banco</li>
+                  <li>• Verifique se a conta tem permissão para consulta</li>
+                </ul>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

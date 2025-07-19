@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { CreditCard, QrCode, Search } from "lucide-react";
+import { CreditCard, QrCode, Search, ExternalLink, Copy } from "lucide-react";
 import backend from "~backend/client";
 
 export function PixPage() {
@@ -139,6 +139,14 @@ export function PixPage() {
     }
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Copiado!",
+      description: "Texto copiado para a área de transferência",
+    });
+  };
+
   const bancos = [
     { value: "ITAU", label: "Banco Itaú" },
     { value: "INTER", label: "Banco Inter" },
@@ -165,10 +173,11 @@ export function PixPage() {
       </div>
 
       <Tabs defaultValue="payment" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="payment">Pagamento</TabsTrigger>
           <TabsTrigger value="receive">Recebimento</TabsTrigger>
           <TabsTrigger value="status">Consultar Status</TabsTrigger>
+          <TabsTrigger value="api">API</TabsTrigger>
         </TabsList>
 
         <TabsContent value="payment">
@@ -448,6 +457,242 @@ export function PixPage() {
               <Button onClick={handleCheckStatus} disabled={loading} className="w-full">
                 {loading ? "Consultando..." : "Consultar Status"}
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="api">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <ExternalLink className="h-5 w-5" />
+                <span>Documentação da API PIX</span>
+              </CardTitle>
+              <CardDescription>
+                URLs, headers e bodies para integração com APIs PIX
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-3">
+                <h3 className="text-base md:text-lg font-semibold">1. Criar Pagamento PIX</h3>
+                <div className="bg-gray-50 p-3 md:p-4 rounded-md space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">URL:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/pix/pagamento")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
+                    https://token.bigcorps.com.br/pix/pagamento
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Método:</Label>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm">POST</code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Headers:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard('{"Content-Type": "application/json"}')}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm overflow-x-auto">
+                    {JSON.stringify({"Content-Type": "application/json"}, null, 2)}
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Body:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(JSON.stringify({
+                        "banco": "{{banco}}",
+                        "clientId": "{{clientId}}",
+                        "accessToken": "{{accessToken}}",
+                        "valor": "{{valor}}",
+                        "chaveDestinatario": "{{chaveDestinatario}}",
+                        "tipoChave": "{{tipoChave}}",
+                        "descricao": "{{descricao}}",
+                        "nomeDestinatario": "{{nomeDestinatario}}"
+                      }, null, 2))}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm whitespace-pre overflow-x-auto">
+                    {JSON.stringify({
+                      "banco": "{{banco}}",
+                      "clientId": "{{clientId}}",
+                      "accessToken": "{{accessToken}}",
+                      "valor": "{{valor}}",
+                      "chaveDestinatario": "{{chaveDestinatario}}",
+                      "tipoChave": "{{tipoChave}}",
+                      "descricao": "{{descricao}}",
+                      "nomeDestinatario": "{{nomeDestinatario}}"
+                    }, null, 2)}
+                  </code>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="text-base md:text-lg font-semibold">2. Gerar QR Code PIX</h3>
+                <div className="bg-gray-50 p-3 md:p-4 rounded-md space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">URL:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/pix/recebimento")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
+                    https://token.bigcorps.com.br/pix/recebimento
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Método:</Label>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm">POST</code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Headers:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard('{"Content-Type": "application/json"}')}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm overflow-x-auto">
+                    {JSON.stringify({"Content-Type": "application/json"}, null, 2)}
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Body:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(JSON.stringify({
+                        "banco": "{{banco}}",
+                        "clientId": "{{clientId}}",
+                        "accessToken": "{{accessToken}}",
+                        "valor": "{{valor}}",
+                        "chaveRecebimento": "{{chaveRecebimento}}",
+                        "tipoChave": "{{tipoChave}}",
+                        "descricao": "{{descricao}}"
+                      }, null, 2))}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm whitespace-pre overflow-x-auto">
+                    {JSON.stringify({
+                      "banco": "{{banco}}",
+                      "clientId": "{{clientId}}",
+                      "accessToken": "{{accessToken}}",
+                      "valor": "{{valor}}",
+                      "chaveRecebimento": "{{chaveRecebimento}}",
+                      "tipoChave": "{{tipoChave}}",
+                      "descricao": "{{descricao}}"
+                    }, null, 2)}
+                  </code>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="text-base md:text-lg font-semibold">3. Consultar Status PIX</h3>
+                <div className="bg-gray-50 p-3 md:p-4 rounded-md space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">URL:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/pix/status/{{idTransacao}}")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
+                    https://token.bigcorps.com.br/pix/status/{"{{idTransacao}}"}
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Método:</Label>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm">GET</code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Headers:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard('{"Content-Type": "application/json"}')}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm overflow-x-auto">
+                    {JSON.stringify({"Content-Type": "application/json"}, null, 2)}
+                  </code>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-sm">Body:</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(JSON.stringify({
+                        "banco": "{{banco}}",
+                        "clientId": "{{clientId}}",
+                        "accessToken": "{{accessToken}}"
+                      }, null, 2))}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <code className="block bg-white p-2 rounded border text-xs md:text-sm whitespace-pre overflow-x-auto">
+                    {JSON.stringify({
+                      "banco": "{{banco}}",
+                      "clientId": "{{clientId}}",
+                      "accessToken": "{{accessToken}}"
+                    }, null, 2)}
+                  </code>
+                </div>
+              </div>
+
+              <div className="bg-green-50 border border-green-200 rounded-md p-3 md:p-4">
+                <h4 className="font-semibold text-green-800 mb-2 text-sm md:text-base">Tipos de Chave PIX:</h4>
+                <ul className="text-xs md:text-sm text-green-700 space-y-1">
+                  <li>• <strong>CPF</strong> - CPF do usuário (formato: 000.000.000-00)</li>
+                  <li>• <strong>CNPJ</strong> - CNPJ da empresa (formato: 00.000.000/0000-00)</li>
+                  <li>• <strong>EMAIL</strong> - E-mail cadastrado no PIX</li>
+                  <li>• <strong>TELEFONE</strong> - Telefone cadastrado (formato: +5511999999999)</li>
+                  <li>• <strong>CHAVE_ALEATORIA</strong> - Chave aleatória gerada pelo banco</li>
+                </ul>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 md:p-4">
+                <h4 className="font-semibold text-blue-800 mb-2 text-sm md:text-base">Observações:</h4>
+                <ul className="text-xs md:text-sm text-blue-700 space-y-1">
+                  <li>• Substitua as variáveis {"{{variavel}}"} pelos valores reais</li>
+                  <li>• Para banco use: ITAU ou INTER</li>
+                  <li>• O valor deve ser um número decimal (ex: 10.50)</li>
+                  <li>• Para QR Code, o valor é opcional (PIX dinâmico)</li>
+                  <li>• Use o accessToken obtido da API de autenticação</li>
+                  <li>• Implemente tratamento de erros para falhas de rede</li>
+                </ul>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

@@ -1,8 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { Building2, CreditCard, Banknote, Wallet, Webhook, Key } from "lucide-react";
+import { useState } from "react";
+import { Building2, CreditCard, Banknote, Wallet, Webhook, Key, Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function Header() {
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigation = [
     { name: "Início", href: "/", icon: Building2 },
@@ -13,6 +16,14 @@ export function Header() {
     { name: "Webhook", href: "/webhook", icon: Webhook },
   ];
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <header className="bg-white shadow-sm border-b">
       <div className="container mx-auto px-4">
@@ -22,7 +33,8 @@ export function Header() {
             <span className="text-xl font-bold text-gray-900">Token Bancário</span>
           </div>
           
-          <nav className="flex space-x-1">
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex space-x-1">
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.href;
@@ -43,7 +55,51 @@ export function Header() {
               );
             })}
           </nav>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleMobileMenu}
+              className="p-2"
+            >
+              {isMobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </Button>
+          </div>
         </div>
+
+        {/* Mobile Navigation */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t bg-white">
+            <nav className="py-2 space-y-1">
+              {navigation.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.href;
+                
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    onClick={closeMobileMenu}
+                    className={`flex items-center space-x-3 px-4 py-3 text-base font-medium transition-colors ${
+                      isActive
+                        ? "bg-orange-100 text-orange-700 border-r-4 border-orange-600"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span>{item.name}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   );
