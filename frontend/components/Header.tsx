@@ -1,11 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
-import { Building2, CreditCard, Banknote, Wallet, Webhook, Key, Menu } from "lucide-react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Building2, CreditCard, Banknote, Wallet, Webhook, Key } from "lucide-react";
 
 export function Header() {
   const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navigation = [
     { name: "Início", href: "/", icon: Building2 },
@@ -22,12 +19,10 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-2">
             <Building2 className="h-8 w-8 text-orange-600" />
-            <span className="text-xl font-bold text-gray-900 hidden sm:block">Token Bancário</span>
-            <span className="text-lg font-bold text-gray-900 sm:hidden">Token</span>
+            <span className="text-xl font-bold text-gray-900">Token Bancário</span>
           </div>
           
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex space-x-1">
+          <nav className="flex space-x-1">
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.href;
@@ -48,45 +43,7 @@ export function Header() {
               );
             })}
           </nav>
-
-          {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="lg:hidden"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
         </div>
-
-        {/* Mobile Navigation */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden border-t bg-white">
-            <nav className="py-2 space-y-1">
-              {navigation.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.href;
-                
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center space-x-3 px-4 py-3 text-sm font-medium transition-colors ${
-                      isActive
-                        ? "bg-orange-100 text-orange-700 border-r-2 border-orange-600"
-                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span>{item.name}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        )}
       </div>
     </header>
   );
