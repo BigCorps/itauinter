@@ -417,4 +417,4 @@ Para dúvidas ou problemas:
 
 ## Licença
 
-Este sistema é proprietário e destinado exclusivamente para integração com as APIs dos Bancos Itaú e Inter.
+Este sistema é proprietário e destinado exclusivamente para integração com as APIs dos Bancos Itaú e Inter
