@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { Key, RefreshCw, Eye, EyeOff, Copy, ExternalLink, Zap, Clock } from "lucide-react";
 import { FileUpload } from "../components/FileUpload";
+import { API_BASE_URL } from "../config";
 import backend from "~backend/client";
 
 export function TokenPage() {
@@ -441,6 +442,15 @@ export function TokenPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <div className="bg-green-50 border border-green-200 rounded-md p-3 md:p-4">
+                <h4 className="font-semibold text-green-800 mb-2 text-sm md:text-base">🚀 Deploy em Produção:</h4>
+                <div className="text-xs md:text-sm text-green-700 space-y-1">
+                  <p><strong>Backend (Railway):</strong> {API_BASE_URL}</p>
+                  <p><strong>Frontend (Vercel):</strong> https://token-bancario.vercel.app</p>
+                  <p><strong>Status:</strong> ✅ Escalabilidade automática ativada</p>
+                </div>
+              </div>
+
               <div className="space-y-3">
                 <h3 className="text-base md:text-lg font-semibold flex items-center space-x-2">
                   <Zap className="h-5 w-5 text-yellow-600" />
@@ -452,13 +462,13 @@ export function TokenPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/auth/pool/{{clientId}}")}
+                      onClick={() => copyToClipboard(`${API_BASE_URL}/auth/pool/{{clientId}}`)}
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
                   <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
-                    https://token.bigcorps.com.br/auth/pool/{"{{clientId}}"}
+                    {API_BASE_URL}/auth/pool/{"{{clientId}}"}
                   </code>
                   
                   <div className="flex items-center justify-between">
@@ -496,13 +506,13 @@ export function TokenPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/auth/token")}
+                      onClick={() => copyToClipboard(`${API_BASE_URL}/auth/token`)}
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
                   <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
-                    https://token.bigcorps.com.br/auth/token
+                    {API_BASE_URL}/auth/token
                   </code>
                   
                   <div className="flex items-center justify-between">
@@ -560,13 +570,13 @@ export function TokenPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => copyToClipboard("https://token.bigcorps.com.br/auth/jwt-token")}
+                      onClick={() => copyToClipboard(`${API_BASE_URL}/auth/jwt-token`)}
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
                   <code className="block bg-white p-2 rounded border text-xs md:text-sm break-all">
-                    https://token.bigcorps.com.br/auth/jwt-token
+                    {API_BASE_URL}/auth/jwt-token
                   </code>
                   
                   <div className="flex items-center justify-between">
@@ -655,6 +665,7 @@ export function TokenPage() {
                   <li>• <strong>Itaú:</strong> Pool automático, sem necessidade de gerenciar expiração</li>
                   <li>• <strong>Inter:</strong> Cache inteligente, token válido por 2 anos</li>
                   <li>• Implemente retry automático para máxima confiabilidade</li>
+                  <li>• <strong>Railway:</strong> Escalabilidade automática ativada</li>
                 </ul>
               </div>
             </CardContent>

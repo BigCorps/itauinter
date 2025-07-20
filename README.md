@@ -2,6 +2,25 @@
 
 Sistema completo para integração com as APIs dos Bancos Itaú e Inter, desenvolvido com Encore.ts e React.
 
+## Arquitetura
+
+### Frontend (Vercel)
+- **React + TypeScript + Vite**
+- **Tailwind CSS + shadcn/ui**
+- **Deploy automático via GitHub**
+- **URL**: `https://token-bancario.vercel.app`
+
+### Backend (Railway)
+- **Encore.ts + PostgreSQL**
+- **Deploy automático via GitHub**
+- **Escalabilidade automática**
+- **URL**: `https://token-bancario-production.up.railway.app`
+
+### Repositório (GitHub)
+- **Controle de versão**
+- **CI/CD automático**
+- **Webhooks para deploy**
+
 ## Funcionalidades
 
 ### 🔐 Autenticação
@@ -76,10 +95,47 @@ Cliente A:
 - **Fallback**: Se um token falha, outro é usado automaticamente
 - **Pré-geração**: Novos tokens são criados antes dos atuais expirarem
 
+## Deploy e Infraestrutura
+
+### Railway (Backend)
+```bash
+# 1. Conectar repositório GitHub ao Railway
+# 2. Configurar variáveis de ambiente
+# 3. Deploy automático a cada push
+
+# Variáveis necessárias no Railway:
+ENCORE_ENV=production
+DATABASE_URL=postgresql://... (gerado automaticamente)
+```
+
+### Vercel (Frontend)
+```bash
+# 1. Conectar repositório GitHub ao Vercel
+# 2. Configurar build settings:
+# Build Command: npm run build
+# Output Directory: dist
+# Install Command: npm install
+
+# Variáveis necessárias no Vercel:
+VITE_API_URL=https://token-bancario-production.up.railway.app
+```
+
+### GitHub (Repositório)
+```bash
+# Estrutura do repositório:
+├── backend/          # Encore.ts services
+├── frontend/         # React application
+├── .github/
+│   └── workflows/    # CI/CD workflows
+├── railway.json     # Railway configuration
+└── vercel.json      # Vercel configuration
+```
+
 ## URLs e Endpoints
 
 ### Base URLs
-- **Produção**: `https://token.bigcorps.com.br`
+- **Frontend**: `https://token-bancario.vercel.app`
+- **Backend**: `https://token-bancario-production.up.railway.app`
 - **STS Itaú**: `https://sts.itau.com.br`
 - **APIs Itaú**: `https://api.itau.com.br`
 - **APIs Inter**: `https://cdpj.partners.bancointer.com.br`
@@ -114,7 +170,7 @@ Cliente A:
 
 ### 1. Gerar Token (Otimizado)
 
-**URL:** `https://token.bigcorps.com.br/auth/pool/{{clientId}}`
+**URL:** `https://token-bancario-production.up.railway.app/auth/pool/{{clientId}}`
 **Método:** GET
 **Headers:**
 ```json
@@ -127,7 +183,7 @@ Cliente A:
 
 ### 2. Criar Pagamento PIX
 
-**URL:** `https://token.bigcorps.com.br/pix/pagamento`
+**URL:** `https://token-bancario-production.up.railway.app/pix/pagamento`
 **Método:** POST
 **Headers:**
 ```json
@@ -151,7 +207,7 @@ Cliente A:
 
 ### 3. Gerar QR Code PIX
 
-**URL:** `https://token.bigcorps.com.br/pix/recebimento`
+**URL:** `https://token-bancario-production.up.railway.app/pix/recebimento`
 **Método:** POST
 **Headers:**
 ```json
@@ -174,7 +230,7 @@ Cliente A:
 
 ### 4. Criar Boleto
 
-**URL:** `https://token.bigcorps.com.br/boleto/criar`
+**URL:** `https://token-bancario-production.up.railway.app/boleto/criar`
 **Método:** POST
 **Headers:**
 ```json
@@ -205,7 +261,7 @@ Cliente A:
 
 ### 5. Consultar Saldo
 
-**URL:** `https://token.bigcorps.com.br/account/saldo`
+**URL:** `https://token-bancario-production.up.railway.app/account/saldo`
 **Método:** GET
 **Headers:**
 ```json
@@ -226,7 +282,7 @@ Cliente A:
 
 ### 6. Consultar Extrato
 
-**URL:** `https://token.bigcorps.com.br/account/extrato`
+**URL:** `https://token-bancario-production.up.railway.app/account/extrato`
 **Método:** GET
 **Headers:**
 ```json
@@ -251,7 +307,7 @@ Cliente A:
 
 ### 7. Consultar Status PIX
 
-**URL:** `https://token.bigcorps.com.br/pix/status/{{idTransacao}}`
+**URL:** `https://token-bancario-production.up.railway.app/pix/status/{{idTransacao}}`
 **Método:** GET
 **Headers:**
 ```json
@@ -270,7 +326,7 @@ Cliente A:
 
 ### 8. Consultar Status Boleto
 
-**URL:** `https://token.bigcorps.com.br/boleto/status/{{nossoNumero}}`
+**URL:** `https://token-bancario-production.up.railway.app/boleto/status/{{nossoNumero}}`
 **Método:** GET
 **Headers:**
 ```json
@@ -287,87 +343,12 @@ Cliente A:
 }
 ```
 
-## Observações Importantes para Typebot
-
-### Variáveis
-- Substitua `{{variavel}}` pelos valores reais ou variáveis do Typebot
-- Use variáveis do Typebot para capturar dados do usuário
-- Para alta demanda, use o endpoint `/auth/pool/{{clientId}}` para obter tokens otimizados
-
-### Bancos Suportados
-- `ITAU` - Banco Itaú (tokens de 5 minutos com pool)
-- `INTER` - Banco Inter (tokens de 2 anos)
-
-### Certificados
-- O certificado e chave privada devem estar em formato **Base64**
-- Use um conversor online ou comando: `base64 -i arquivo.crt`
-- Armazene os certificados em variáveis seguras do Typebot
-
-### Tipos de Chave PIX
-- `CPF` - CPF do usuário
-- `CNPJ` - CNPJ da empresa
-- `EMAIL` - E-mail cadastrado
-- `TELEFONE` - Telefone cadastrado
-- `CHAVE_ALEATORIA` - Chave aleatória gerada pelo banco
-
-### Respostas
-- Todos os endpoints retornam JSON
-- Use o campo `accessToken` da resposta de autenticação
-- Para Itaú: Token expira em 5 minutos, use pool para alta demanda
-- Para Inter: Token expira em 2 anos, pode ser reutilizado
-
-### Tratamento de Erros
-- Verifique o status HTTP da resposta
-- Trate erros 400 (dados inválidos) e 500 (erro interno)
-- Implemente retry para falhas temporárias
-- Para Itaú: Se um token falha, tente outro do pool
-
-### Otimizações para Alta Demanda
-
-#### Para Clientes com Muitas Transações
-1. **Use o endpoint de pool**: `/auth/pool/{{clientId}}`
-2. **Cache tokens localmente** por 4 minutos (Itaú) ou 1 ano (Inter)
-3. **Implemente retry** com diferentes tokens do pool
-4. **Monitore expiração** e renove proativamente
-
-#### Exemplo de Implementação no Typebot
-```javascript
-// Para Itaú - Alta demanda
-const getItauToken = async (clientId) => {
-  try {
-    const response = await fetch(`/auth/pool/${clientId}?banco=ITAU`);
-    const data = await response.json();
-    return data.accessToken;
-  } catch (error) {
-    // Fallback para geração manual
-    return await generateNewToken(clientId);
-  }
-};
-
-// Para Inter - Token longo
-const getInterToken = async (clientId) => {
-  // Verificar cache local primeiro
-  const cachedToken = localStorage.getItem(`inter_token_${clientId}`);
-  if (cachedToken && !isExpired(cachedToken)) {
-    return cachedToken;
-  }
-  
-  // Gerar novo token se necessário
-  const response = await fetch('/auth/token', { ... });
-  const data = await response.json();
-  
-  // Cache por 1 ano
-  localStorage.setItem(`inter_token_${clientId}`, data.accessToken);
-  return data.accessToken;
-};
-```
-
 ## Configuração do Webhook
 
 Para receber notificações automáticas dos bancos, configure a seguinte URL no painel do banco:
 
 ```
-https://token.bigcorps.com.br/webhook/notification
+https://token-bancario-production.up.railway.app/webhook/notification
 ```
 
 ### Eventos Suportados
@@ -375,6 +356,62 @@ https://token.bigcorps.com.br/webhook/notification
 - `PIX_PAYMENT_CONFIRMED` - Pagamento PIX confirmado
 - `BOLETO_PAID` - Boleto pago
 - `BOLETO_EXPIRED` - Boleto vencido
+
+## Guia de Deploy
+
+### 1. Railway (Backend)
+
+1. **Criar conta no Railway**: https://railway.app
+2. **Conectar GitHub**: Autorize o Railway a acessar seu repositório
+3. **Criar novo projeto**: 
+   - Selecione "Deploy from GitHub repo"
+   - Escolha seu repositório
+   - Railway detectará automaticamente o Encore.ts
+4. **Configurar variáveis**:
+   ```
+   ENCORE_ENV=production
+   ```
+5. **Deploy automático**: A cada push no GitHub, o Railway fará deploy automaticamente
+
+### 2. Vercel (Frontend)
+
+1. **Criar conta no Vercel**: https://vercel.com
+2. **Conectar GitHub**: Autorize o Vercel a acessar seu repositório
+3. **Importar projeto**:
+   - Root Directory: `frontend`
+   - Framework Preset: `Vite`
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+4. **Configurar variáveis**:
+   ```
+   VITE_API_URL=https://seu-projeto.up.railway.app
+   ```
+5. **Deploy automático**: A cada push no GitHub, o Vercel fará deploy automaticamente
+
+### 3. Configuração de Domínio (Opcional)
+
+#### Railway
+- Acesse o dashboard do Railway
+- Vá em Settings > Domains
+- Adicione seu domínio personalizado
+
+#### Vercel
+- Acesse o dashboard do Vercel
+- Vá em Settings > Domains
+- Adicione seu domínio personalizado
+
+## Monitoramento e Logs
+
+### Railway
+- **Logs em tempo real**: Dashboard do Railway
+- **Métricas**: CPU, memória, rede
+- **Alertas**: Configuráveis por email/Slack
+- **Backup automático**: PostgreSQL
+
+### Vercel
+- **Analytics**: Tráfego e performance
+- **Logs de build**: Histórico completo
+- **Edge Functions**: Monitoramento global
 
 ## Segurança
 
@@ -393,8 +430,21 @@ https://token.bigcorps.com.br/webhook/notification
 - Client secrets são mascarados na interface
 - Certificados são criptografados no banco
 - Logs não contêm informações sensíveis
+- HTTPS obrigatório em produção
+
+### Variáveis de Ambiente
+- Secrets gerenciados pelo Railway
+- Separação entre desenvolvimento e produção
+- Rotação automática de credenciais
 
 ## Capacidade e Performance
+
+### Railway
+- **Escalabilidade**: Automática baseada em demanda
+- **CPU**: Até 8 vCPUs por serviço
+- **RAM**: Até 32GB por serviço
+- **Storage**: SSD de alta performance
+- **Database**: PostgreSQL gerenciado
 
 ### Tokens Simultâneos
 - **Itaú**: 3-5 tokens por cliente no pool
@@ -407,14 +457,35 @@ https://token.bigcorps.com.br/webhook/notification
 - Pool pré-aquecido para clientes ativos
 - Distribuição round-robin de tokens
 - Fallback automático em caso de falha
+- CDN global via Vercel
+
+## Custos Estimados
+
+### Railway (Backend)
+- **Starter**: $5/mês - Ideal para desenvolvimento
+- **Pro**: $20/mês - Recomendado para produção
+- **PostgreSQL**: Incluído no plano
+
+### Vercel (Frontend)
+- **Hobby**: Gratuito - Ideal para projetos pessoais
+- **Pro**: $20/mês - Recomendado para produção
+- **Bandwidth**: 100GB incluído
+
+### GitHub
+- **Gratuito**: Repositórios públicos ilimitados
+- **Pro**: $4/mês - Repositórios privados ilimitados
+
+### Total Estimado
+- **Desenvolvimento**: $0-9/mês
+- **Produção**: $40-50/mês
 
 ## Suporte
 
 Para dúvidas ou problemas:
 1. Consulte esta documentação
-2. Verifique os logs do sistema
+2. Verifique os logs do Railway/Vercel
 3. Entre em contato com o suporte técnico
 
 ## Licença
 
-Este sistema é proprietário e destinado exclusivamente para integração com as APIs dos Bancos Itaú e Inter
+Este sistema é proprietário e destinado exclusivamente para integração com as APIs dos Bancos Itaú e Inter.
