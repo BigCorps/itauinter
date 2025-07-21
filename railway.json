@@ -1,11 +1,11 @@
 {
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "cd backend && npm install && npm run build", // <-- MUDANÇA AQUI
+    "buildCommand": "cd backend && npm install && npm install -g @encoredev/cli && encore build",
     "watchPatterns": ["backend/**"]
   },
   "deploy": {
-    "startCommand": "cd backend && encore run --env=production",
+    "startCommand": "cd backend && npm install -g @encoredev/cli && encore run --env=production",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 300
   }

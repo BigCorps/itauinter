@@ -4,8 +4,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "build": "encore build",
-    "start": "encore run --env=production"
+    "build": "npx encore build",
+    "start": "npx encore run --env=production"
   },
   "dependencies": {
     "encore.dev": "^1.48.10"
