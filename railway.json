@@ -1,7 +1,8 @@
 {
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "cd backend && npm install && encore build",
+    "buildCommand": "cd backend && npm install && ./node_modules/.bin/encore build",
+    // Ou "npm run build" se você tiver um script "build": "encore build" no package.json do backend
     "watchPatterns": ["backend/**"]
   },
   "deploy": {
