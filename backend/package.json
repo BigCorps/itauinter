@@ -2,14 +2,18 @@
   "name": "backend",
   "version": "1.0.0",
   "type": "module",
-  "packageManager": "bun",
+  "main": "index.js",
   "scripts": {
-    "build": "cd ../frontend \u0026\u0026 bun install \u0026\u0026 vite build --outDir=../backend/frontend/dist"
+    "build": "encore build",
+    "start": "encore run --env=production"
   },
   "dependencies": {
     "encore.dev": "^1.48.8"
+    // Outras dependências que seu backend possa ter, ex: "express", "pg", etc.
   },
   "devDependencies": {
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "encore": "^1.48.8" // É importante que 'encore' esteja acessível para o npx
+    // Outras ferramentas de desenvolvimento que seu backend possa usar
   }
 }
