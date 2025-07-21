@@ -1,17 +1,12 @@
 {
-  "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "cd backend && npm install && npx encore build",
-    "watchPatterns": [
-      "backend/**"
-    ]
+    "buildCommand": "cd backend && npm install && encore build",
+    "watchPatterns": ["backend/**"]
   },
   "deploy": {
-    "startCommand": "cd backend && npx encore run --env=production",
+    "startCommand": "cd backend && encore run --env=production",
     "healthcheckPath": "/health",
-    "healthcheckTimeout": 300,
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 3
+    "healthcheckTimeout": 300
   }
 }
